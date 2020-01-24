@@ -18,7 +18,7 @@ module Fzy
 
   class Match
     include Comparable(Match)
-    property positions
+    getter positions
     getter value
     getter score
 
