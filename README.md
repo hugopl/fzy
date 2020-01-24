@@ -39,11 +39,6 @@ value: Halley
 
 ## TODO
 
-Current version works and it's pretty fast, but common use case for fyz is to have the same _haystack_ and find for different _needles_,
-so it's on my plans to improve the API a bit to avoid some double computation and save some allocations.
-
-Options like "do not compute positions" should also appear in next versions.
-
 Write some API documentation!
 
 ## Contributing
