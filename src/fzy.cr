@@ -160,9 +160,6 @@ module Fzy
     computation.m_table[n - 1][m - 1]
   end
 
-  private def score(needle : String, haystack : String, d_table, m_table) : Float32
-  end
-
   def positions(needle : String, haystack : String, computation : MatchComputation? = nil) : Array(Int32)
     n = needle.size
     m = haystack.size
@@ -182,9 +179,8 @@ module Fzy
     # backtrack to find the positions of optimal matching
     match_required = false
 
-    j = m - 1
     (n - 1).downto(0) do |i|
-      j.downto(0) do |j|
+      (m - 1).downto(0) do |j|
         # There may be multiple paths which result in
         # the optimal weight.
         #
@@ -198,7 +194,6 @@ module Fzy
 
           match_required = i > 0 && j > 0 && m_table[i][j] == (d_table[i - 1][j - 1] + Fzy::SCORE_MATCH_CONSECUTIVE)
           positions[i] = j
-          j -= 1
           break
         end
       end
