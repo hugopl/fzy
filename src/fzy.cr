@@ -1,7 +1,9 @@
+require "version_from_shard"
+
 module Fzy
   extend self
 
-  VERSION = "0.1.0"
+  VersionFromShard.declare
 
   SCORE_MIN               = -Float32::INFINITY
   SCORE_MAX               = Float32::INFINITY
