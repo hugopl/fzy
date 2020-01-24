@@ -37,9 +37,25 @@ value: Halley
   pos: [0, 4, 5]
 ```
 
-## TODO
+`search` call should be enough for most of people, but there are some primitives in the API if you want to do something else.
 
-Write some API documentation!
+```crystal
+# Returns true if the needle matches haystack.
+Fzy.match?(needle : String, haystack : String) : Bool
+
+# Returns the scode of needle against haystack
+# MatchComputation is a object used to share the computation between score and positions calls for the same
+# needle and haystack.
+#
+# This method expects that needle matches the haystack.
+Fzy.score(needle : String, haystack : String, computation : MatchComputation? = nil) : Float32
+
+# Returns an array of needle.size size, each element is the position of the needle char at
+# that index into haystack.
+#
+# This method expects that needle matches the haystack.
+Fzy.positions(needle : String, haystack : String, computation : MatchComputation? = nil) : Array(Int32)
+```
 
 ## Contributing
 
