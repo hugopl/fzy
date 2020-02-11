@@ -137,14 +137,26 @@ module Fzy
       lower_needle = needle.downcase
       matches = [] of Match
       @lower_haystack.each_with_index do |lower_hay, index|
-        next unless Fzy.match?(lower_needle, lower_hay)
+        next unless match?(lower_needle, lower_hay)
 
         matches << Match.new(needle, lower_needle, @haystack[index], lower_hay)
       end
       matches
     end
+
+    private def match?(needle : String, haystack : String) : Bool
+      offset = 0
+      needle.each_char do |nch|
+        new_offset = haystack.index(nch, offset)
+        return false if new_offset.nil?
+
+        offset = new_offset + 1
+      end
+      true
+    end
   end
 
+  # Search a needle in a haystack and returns an array of matches.
   def search(needle : String, haystack : PreparedHaystack) : Array(Match)
     haystack.search(needle)
   end
@@ -155,18 +167,6 @@ module Fzy
   # different needles but the same haystack.
   def search(needle : String, haystack : Array(String)) : Array(Match)
     search(needle, PreparedHaystack.new(haystack))
-  end
-
-  # Returns true if needle matches haystack, this is CASE SENSITIVE!
-  def match?(needle : String, haystack : String) : Bool
-    offset = 0
-    needle.each_char do |nch|
-      new_offset = haystack.index(nch, offset)
-      return false if new_offset.nil?
-
-      offset = new_offset + 1
-    end
-    true
   end
 
   # Finds the score of needle for haystack.

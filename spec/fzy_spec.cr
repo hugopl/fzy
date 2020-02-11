@@ -3,10 +3,11 @@ require "./spec_helper"
 describe Fzy do
   context "match" do
     it "works" do
-      Fzy.match?("amor", "app/models/order").should eq(true)
-      Fzy.match?("amor", "amor").should eq(true)
-      Fzy.match?("amor", "amora").should eq(true)
-      Fzy.match?("amor", "amoR").should eq(false)
+      Fzy.search("amor", %w(app/models/order)).first.value.should eq("app/models/order")
+      Fzy.search("amor", %w(amor)).first.value.should eq("amor")
+      Fzy.search("amor", %w(amora)).first.value.should eq("amora")
+      Fzy.search("amor", %w(amoR)).first.value.should eq("amoR")
+      Fzy.search("amor", %w(amos)).size.should eq(0)
     end
   end
 
