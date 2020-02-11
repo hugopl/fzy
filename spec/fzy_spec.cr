@@ -6,7 +6,7 @@ describe Fzy do
       Fzy.match?("amor", "app/models/order").should eq(true)
       Fzy.match?("amor", "amor").should eq(true)
       Fzy.match?("amor", "amora").should eq(true)
-      Fzy.match?("amor", "amoR").should eq(true)
+      Fzy.match?("amor", "amoR").should eq(false)
     end
   end
 

@@ -22,11 +22,11 @@ module Fzy
     getter value
     getter score
 
-    def initialize(needle : String, haystack : String)
+    def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String)
       n = needle.size
       m = haystack.size
       # avoid MatchComputation when it wont be needed
-      computation = MatchComputation.new(needle, haystack) if n != m && n > 0 && m > 0 && m > 1024
+      computation = MatchComputation.new(needle, lower_needle, haystack, lower_haystack) if n != m && n > 0 && m > 0 && m > 1024
 
       @positions = Fzy.positions(needle, haystack, computation)
       @score = Fzy.score(needle, haystack, computation)
@@ -42,18 +42,19 @@ module Fzy
     getter! d_table : Array(Array(Float32))?
     getter! m_table : Array(Array(Float32))?
 
-    def initialize(@needle : String, @haystack : String)
+    def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String)
+      compute(needle, lower_needle, haystack, lower_haystack)
     end
 
-    private def precompute_bonus : Array(Float32)
+    private def precompute_bonus(haystack) : Array(Float32)
       # Which positions are beginning of words
-      m = @haystack.size
+      m = haystack.size
       match_bonus = Array(Float32).new(m)
 
       last_ch = '/'
 
       Array(Float32).new(m) do |i|
-        ch = @haystack[i]
+        ch = haystack[i]
         match_bonus = if last_ch === '/'
                         SCORE_MATCH_SLASH
                       elsif last_ch === '-' || last_ch === '_' || last_ch === ' '
@@ -70,20 +71,17 @@ module Fzy
       end
     end
 
-    def compute : Nil
+    private def compute(needle : String, lower_needle : String, haystack : String, lower_haystack : String) : Nil
       d_table = @d_table
       m_table = @m_table
       return if d_table || m_table
 
-      n = @needle.size
-      m = @haystack.size
+      n = needle.size
+      m = haystack.size
       d_table = Array.new(n, [] of Float32)
       m_table = Array.new(n, [] of Float32)
 
-      lower_needle = @needle.downcase
-      lower_haystack = @haystack.downcase
-
-      match_bonus = precompute_bonus
+      match_bonus = precompute_bonus(haystack)
 
       # D[][] Stores the best score for this position ending with a match.
       # M[][] Stores the best possible score at this position.
@@ -120,20 +118,43 @@ module Fzy
     end
   end
 
-  def search(needle : String, haystack : Array(String))
-    haystack.select do |hay|
-      match?(needle, hay)
-    end.map do |hay|
-      Match.new(needle, hay)
-    end.sort
+  class PreparedHaystack
+    @lower_haystack : Array(String)
+
+    def initialize(@haystack : Array(String))
+      @lower_haystack = @haystack.map(&.downcase)
+    end
+
+    def search(needle : String) : Array(Match)
+      lower_needle = needle.downcase
+      matches = [] of Match
+      @lower_haystack.each_with_index do |lower_hay, index|
+        next unless Fzy.match?(lower_needle, lower_hay)
+
+        matches << Match.new(needle, lower_needle, @haystack[index], lower_hay)
+      end
+      matches
+    end
   end
 
-  # Returns true if needle matches haystack
+  def search(needle : String, haystack : PreparedHaystack) : Array(Match)
+    haystack.search(needle)
+  end
+
+  def search(needle : String, haystack : Array(String)) : Array(Match)
+    search(needle, PreparedHaystack.new(haystack))
+    # haystack.select do |hay|
+    #   match?(needle, hay)
+    # end.map do |hay|
+    #   Match.new(needle, hay)
+    # end.sort
+  end
+
+  # Returns true if needle matches haystack, this is CASE SENSITIVE!
   def match?(needle : String, haystack : String) : Bool
     offset = 0
     needle.each_char do |nch|
       new_offset = haystack.index(nch, offset)
-      new_offset = haystack.index(nch.uppercase? ? nch.downcase : nch.upcase, offset) if new_offset.nil?
       return false if new_offset.nil?
 
       offset = new_offset + 1
@@ -155,8 +176,7 @@ module Fzy
     # strings themselves must also be equal (ignoring case).
     return SCORE_MAX if n === m
 
-    computation ||= MatchComputation.new(needle, haystack)
-    computation.compute
+    computation ||= MatchComputation.new(needle, needle.downcase, haystack, haystack.downcase)
     computation.m_table[n - 1][m - 1]
   end
 
@@ -170,8 +190,7 @@ module Fzy
       return positions.map_with_index! { |_e, i| i }
     end
 
-    computation ||= MatchComputation.new(needle, haystack)
-    computation.compute
+    computation ||= MatchComputation.new(needle, needle.downcase, haystack, haystack.downcase)
 
     d_table = computation.d_table
     m_table = computation.m_table
