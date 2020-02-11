@@ -24,6 +24,7 @@ require "fzy"
 results = Fzy.search("hey", %w(Hey Halley Whatever))
 results.each do |result|
   puts "value: #{result.value}"
+  puts "score: #{result.score}"
   puts "  pos: #{result.positions.inspect}"
 end
 ```
@@ -32,29 +33,11 @@ Should print
 
 ```
 value: Hey
+score: Infinity
   pos: [0, 1, 2]
 value: Halley
+score: 1.87
   pos: [0, 4, 5]
-```
-
-`search` call should be enough for most of people, but there are some primitives in the API if you want to do something else.
-
-```crystal
-# Returns true if the needle matches haystack.
-Fzy.match?(needle : String, haystack : String) : Bool
-
-# Returns the scode of needle against haystack
-# MatchComputation is a object used to share the computation between score and positions calls for the same
-# needle and haystack.
-#
-# This method expects that needle matches the haystack.
-Fzy.score(needle : String, haystack : String, computation : MatchComputation? = nil) : Float32
-
-# Returns an array of needle.size size, each element is the position of the needle char at
-# that index into haystack.
-#
-# This method expects that needle matches the haystack.
-Fzy.positions(needle : String, haystack : String, computation : MatchComputation? = nil) : Array(Int32)
 ```
 
 ## Contributing

@@ -16,12 +16,19 @@ module Fzy
   SCORE_MATCH_CAPITAL     =    0.7_f32
   SCORE_MATCH_DOT         =    0.6_f32
 
+  # A search operation returns an array of Match objects, these objects stores the matching score and the
+  # position of matched characters.
   class Match
     include Comparable(Match)
+
+    # Array of size of needle string, containing the Position of each needle character into haystack string.
     getter positions
+    # Result of the match.
     getter value
+    # Match score.
     getter score
 
+    # :nodoc
     def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String)
       n = needle.size
       m = haystack.size
@@ -33,6 +40,7 @@ module Fzy
       @value = haystack
     end
 
+    # A match is greater than other if it has a greater score.
     def <=>(other)
       other.score <=> @score
     end
@@ -141,13 +149,12 @@ module Fzy
     haystack.search(needle)
   end
 
+  # Search a needle in a haystack and returns an array of matches.
+  #
+  # Consider using #search(String,PreparedHaystack) if you want to repeat this call with
+  # different needles but the same haystack.
   def search(needle : String, haystack : Array(String)) : Array(Match)
     search(needle, PreparedHaystack.new(haystack))
-    # haystack.select do |hay|
-    #   match?(needle, hay)
-    # end.map do |hay|
-    #   Match.new(needle, hay)
-    # end.sort
   end
 
   # Returns true if needle matches haystack, this is CASE SENSITIVE!
