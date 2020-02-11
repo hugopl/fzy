@@ -107,7 +107,7 @@ module Fzy
             score = SCORE_MIN
             if i.zero?
               score = (j * SCORE_GAP_LEADING) + match_bonus[j]
-            elsif (j) # i > 0 && j > 0
+            elsif j > 0 # i > 0 && j > 0
               score = Math.max(
                 m_table[i - 1][j - 1] + match_bonus[j],
                 # consecutive match, doesn't stack with match_bonus
