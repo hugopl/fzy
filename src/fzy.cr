@@ -28,12 +28,17 @@ module Fzy
     # Match score.
     getter score
 
-    # :nodoc
+    # :nodoc:
+    def initialize(@value : String, @score : Float32, @positions : Array(Int32))
+    end
+
+    # :nodoc:
     def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String)
       n = needle.size
       m = haystack.size
       # avoid MatchComputation when it wont be needed
-      computation = MatchComputation.new(needle, lower_needle, haystack, lower_haystack) if n != m && n > 0 && m > 0 && m > 1024
+      # if n == 0 we also don't need a MatchComputation, however n should never be zero here.
+      computation = MatchComputation.new(needle, lower_needle, haystack, lower_haystack) if m > n && m < 1024
 
       @positions = Fzy.positions(needle, haystack, computation)
       @score = Fzy.score(needle, haystack, computation)
@@ -128,12 +133,22 @@ module Fzy
 
   class PreparedHaystack
     @lower_haystack : Array(String)
+    @empty_search_result : Array(Match)?
 
     def initialize(@haystack : Array(String))
       @lower_haystack = @haystack.map(&.downcase)
     end
 
+    private def empty_search_result
+      @empty_search_result ||= begin
+        positions = [] of Int32
+        @haystack.map { |e| Match.new(e, SCORE_MIN, positions) }
+      end
+    end
+
     def search(needle : String) : Array(Match)
+      return empty_search_result if needle.empty?
+
       lower_needle = needle.downcase
       matches = [] of Match
       @lower_haystack.each_with_index do |lower_hay, index|
@@ -193,9 +208,7 @@ module Fzy
 
     positions = Array.new(n, -1)
     return positions if n.zero? || m.zero? || m > 1024
-    if n == m
-      return positions.map_with_index! { |_e, i| i }
-    end
+    return positions.map_with_index! { |_e, i| i } if n == m
 
     computation ||= MatchComputation.new(needle, needle.downcase, haystack, haystack.downcase)
 
