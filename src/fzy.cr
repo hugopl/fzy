@@ -41,13 +41,31 @@ module Fzy
       computation = MatchComputation.new(needle, lower_needle, haystack, lower_haystack) if m > n && m < 1024
 
       @positions = positions(needle, haystack, computation)
-      @score = Fzy.score(needle, haystack, computation)
+      @score = score(needle, haystack, computation)
       @value = haystack
     end
 
     # A match is greater than other if it has a greater score.
     def <=>(other)
       other.score <=> @score
+    end
+
+    # Finds the score of needle for haystack.
+    private def score(needle : String, haystack : String, computation : MatchComputation? = nil) : Float32
+      n = needle.size
+      m = haystack.size
+
+      # Unreasonably large candidate: return no score
+      # If it is a valid match it will still be returned, it will
+      # just be ranked below any reasonably sized candidates
+      return SCORE_MIN if n.zero? || m.zero? || m > 1024
+      # Since this method can only be called with a haystack which
+      # matches needle. If the lengths of the strings are equal the
+      # strings themselves must also be equal (ignoring case).
+      return SCORE_MAX if n === m
+
+      computation ||= MatchComputation.new(needle, needle.downcase, haystack, haystack.downcase)
+      computation.m_table[n - 1][m - 1]
     end
 
     private def positions(needle : String, haystack : String, computation : MatchComputation? = nil) : Array(Int32)
@@ -221,23 +239,5 @@ module Fzy
   # different needles but the same haystack.
   def search(needle : String, haystack : Array(String)) : Array(Match)
     search(needle, PreparedHaystack.new(haystack))
-  end
-
-  # Finds the score of needle for haystack.
-  def score(needle : String, haystack : String, computation : MatchComputation? = nil) : Float32
-    n = needle.size
-    m = haystack.size
-
-    # Unreasonably large candidate: return no score
-    # If it is a valid match it will still be returned, it will
-    # just be ranked below any reasonably sized candidates
-    return SCORE_MIN if n.zero? || m.zero? || m > 1024
-    # Since this method can only be called with a haystack which
-    # matches needle. If the lengths of the strings are equal the
-    # strings themselves must also be equal (ignoring case).
-    return SCORE_MAX if n === m
-
-    computation ||= MatchComputation.new(needle, needle.downcase, haystack, haystack.downcase)
-    computation.m_table[n - 1][m - 1]
   end
 end

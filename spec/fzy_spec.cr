@@ -31,78 +31,78 @@ describe Fzy do
   context "score" do
     it "should prefer starts of words" do
       # App/Models/Order is better than App/MOdels/zRder
-      Fzy.score("amor", "app/models/order").should be > Fzy.score("amor", "app/models/zrder")
+      Fzy.search("amor", ["app/models/order"]).first.score.should be > Fzy.search("amor", ["app/models/zrder"]).first.score
     end
 
     it "should prefer consecutive letters" do
       # App/MOdels/foo is better than App/M/fOo
-      Fzy.score("amo", "app/m/foo").should be < Fzy.score("amo", "app/models/foo")
+      Fzy.search("amo", ["app/m/foo"]).first.score.should be < Fzy.search("amo", ["app/models/foo"]).first.score
     end
 
     it "should prefer contiguous over letter following period" do
       # GEMFIle.Lock < GEMFILe
-      Fzy.score("gemfil", "Gemfile.lock").should be < Fzy.score("gemfil", "Gemfile")
+      Fzy.search("gemfil", ["Gemfile.lock"]).first.score.should be < Fzy.search("gemfil", ["Gemfile"]).first.score
     end
 
     it "should prefer shorter matches" do
-      Fzy.score("abce", "abcdef").should be > Fzy.score("abce", "abc de")
-      Fzy.score("abc", "    a b c ").should be > Fzy.score("abc", " a  b  c ")
-      Fzy.score("abc", " a b c    ").should be > Fzy.score("abc", " a  b  c ")
+      Fzy.search("abce", ["abcdef"]).first.score.should be > Fzy.search("abce", ["abc de"]).first.score
+      Fzy.search("abc", ["    a b c "]).first.score.should be > Fzy.search("abc", [" a  b  c "]).first.score
+      Fzy.search("abc", [" a b c    "]).first.score.should be > Fzy.search("abc", [" a  b  c "]).first.score
     end
 
     it "should prefer shorter candidates" do
-      Fzy.score("test", "tests").should be > Fzy.score("test", "testing")
+      Fzy.search("test", ["tests"]).first.score.should be > Fzy.search("test", ["testing"]).first.score
     end
 
     it "should prefer start of candidate" do
       # Scores first letter highly
-      Fzy.score("test", "testing").should be > Fzy.score("test", "/testing")
+      Fzy.search("test", ["testing"]).first.score.should be > Fzy.search("test", ["/testing"]).first.score
     end
 
     it "score exact score" do
       # Exact match is Fzy::SCORE_MAX
-      Fzy.score("abc", "abc").should eq(Fzy::SCORE_MAX)
-      Fzy.score("aBc", "abC").should eq(Fzy::SCORE_MAX)
+      Fzy.search("abc", ["abc"]).first.score.should eq(Fzy::SCORE_MAX)
+      Fzy.search("aBc", ["abC"]).first.score.should eq(Fzy::SCORE_MAX)
     end
 
     it "score empty query" do
       # Empty query always results in Fzy::SCORE_MIN
-      Fzy.score("", "").should eq(Fzy::SCORE_MIN)
-      Fzy.score("", "a").should eq(Fzy::SCORE_MIN)
-      Fzy.score("", "bb").should eq(Fzy::SCORE_MIN)
+      Fzy.search("", [""]).first.score.should eq(Fzy::SCORE_MIN)
+      Fzy.search("", ["a"]).first.score.should eq(Fzy::SCORE_MIN)
+      Fzy.search("", ["bb"]).first.score.should eq(Fzy::SCORE_MIN)
     end
 
     it "score gaps" do
-      Fzy.score("a", "*a").should eq(Fzy::SCORE_GAP_LEADING)
-      Fzy.score("a", "*ba").should eq(Fzy::SCORE_GAP_LEADING * 2)
-      Fzy.score("a", "**a*").should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_GAP_TRAILING)
-      Fzy.score("a", "**a**").should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_GAP_TRAILING*2)
-      Fzy.score("aa", "**aa**").should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_CONSECUTIVE + Fzy::SCORE_GAP_TRAILING * 2)
-      Fzy.score("aa", "**a*a**").should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_INNER + Fzy::SCORE_GAP_TRAILING + Fzy::SCORE_GAP_TRAILING)
+      Fzy.search("a", ["*a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING)
+      Fzy.search("a", ["*ba"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2)
+      Fzy.search("a", ["**a*"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_GAP_TRAILING)
+      Fzy.search("a", ["**a**"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_GAP_TRAILING*2)
+      Fzy.search("aa", ["**aa**"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_CONSECUTIVE + Fzy::SCORE_GAP_TRAILING * 2)
+      Fzy.search("aa", ["**a*a**"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_INNER + Fzy::SCORE_GAP_TRAILING + Fzy::SCORE_GAP_TRAILING)
     end
 
     it "score consecutive" do
-      Fzy.score("aa", "*aa").should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_CONSECUTIVE)
-      Fzy.score("aaa", "*aaa").should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_CONSECUTIVE * 2)
-      Fzy.score("aaa", "*a*aa").should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_INNER + Fzy::SCORE_MATCH_CONSECUTIVE)
+      Fzy.search("aa", ["*aa"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_CONSECUTIVE)
+      Fzy.search("aaa", ["*aaa"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_CONSECUTIVE * 2)
+      Fzy.search("aaa", ["*a*aa"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_INNER + Fzy::SCORE_MATCH_CONSECUTIVE)
     end
 
     it "score slash" do
-      Fzy.score("a", "/a").should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_SLASH)
-      Fzy.score("a", "*/a").should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_SLASH)
-      Fzy.score("aa", "a/aa").should eq(Fzy::SCORE_GAP_LEADING*2 + Fzy::SCORE_MATCH_SLASH + Fzy::SCORE_MATCH_CONSECUTIVE)
+      Fzy.search("a", ["/a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_SLASH)
+      Fzy.search("a", ["*/a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_SLASH)
+      Fzy.search("aa", ["a/aa"]).first.score.should eq(Fzy::SCORE_GAP_LEADING*2 + Fzy::SCORE_MATCH_SLASH + Fzy::SCORE_MATCH_CONSECUTIVE)
     end
 
     it "score capital" do
-      Fzy.score("a", "bA").should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_CAPITAL)
-      Fzy.score("a", "baA").should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_CAPITAL)
-      Fzy.score("aa", "baAa").should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_CAPITAL + Fzy::SCORE_MATCH_CONSECUTIVE)
+      Fzy.search("a", ["bA"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_CAPITAL)
+      Fzy.search("a", ["baA"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_CAPITAL)
+      Fzy.search("aa", ["baAa"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_CAPITAL + Fzy::SCORE_MATCH_CONSECUTIVE)
     end
 
     it "score dot" do
-      Fzy.score("a", ".a").should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_DOT)
-      Fzy.score("a", "*a.a").should eq(Fzy::SCORE_GAP_LEADING * 3 + Fzy::SCORE_MATCH_DOT)
-      Fzy.score("a", "*a.a").should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_INNER + Fzy::SCORE_MATCH_DOT)
+      Fzy.search("a", [".a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_DOT)
+      Fzy.search("a", ["*a.a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 3 + Fzy::SCORE_MATCH_DOT)
+      Fzy.search("a", ["*a.a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_INNER + Fzy::SCORE_MATCH_DOT)
     end
   end
 
