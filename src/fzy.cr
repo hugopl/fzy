@@ -5,23 +5,33 @@ module Fzy
 
   VersionFromShard.declare
 
-  SCORE_MIN               = -Float32::INFINITY
-  SCORE_MAX               = Float32::INFINITY
-  SCORE_GAP_LEADING       = -0.005_f32
-  SCORE_GAP_TRAILING      = -0.005_f32
-  SCORE_GAP_INNER         =  -0.01_f32
-  SCORE_MATCH_CONSECUTIVE =    1.0_f32
-  SCORE_MATCH_SLASH       =    0.9_f32
-  SCORE_MATCH_WORD        =    0.8_f32
-  SCORE_MATCH_CAPITAL     =    0.7_f32
-  SCORE_MATCH_DOT         =    0.6_f32
+  # :nodoc:
+  SCORE_MIN = -Float32::INFINITY
+  # :nodoc:
+  SCORE_MAX = Float32::INFINITY
+  # :nodoc:
+  SCORE_GAP_LEADING = -0.005_f32
+  # :nodoc:
+  SCORE_GAP_TRAILING = -0.005_f32
+  # :nodoc:
+  SCORE_GAP_INNER = -0.01_f32
+  # :nodoc:
+  SCORE_MATCH_CONSECUTIVE = 1.0_f32
+  # :nodoc:
+  SCORE_MATCH_SLASH = 0.9_f32
+  # :nodoc:
+  SCORE_MATCH_WORD = 0.8_f32
+  # :nodoc:
+  SCORE_MATCH_CAPITAL = 0.7_f32
+  # :nodoc:
+  SCORE_MATCH_DOT = 0.6_f32
 
   # A search operation returns an array of Match objects, these objects stores the matching score and the
-  # position of matched characters.
+  # position of matched characters. See `Fzy.search`
   class Match
     include Comparable(Match)
 
-    # Array of size of needle string, containing the Position of each needle character into haystack string.
+    # Array of size of needle string, containing the position of each needle character into haystack string.
     getter positions
     # Result of the match.
     getter value
@@ -130,18 +140,36 @@ module Fzy
     end
   end
 
+  # This class should be used if you plan to do more than one search on the same haystack.
+  # It just cache some stuff making following searches faster.
+  #
+  # ```
+  # haystack = %w(dog cat bat tiger)
+  # prepared_haystack = PreparedHaystack.new(haystack)
+  # Fzy.search(prepared_haystack).each do |match|
+  #   puts "found #{match.value} with score #{match.score}"
+  # end
+  # ```
+  #
+  # Usually you never need to use any methods from this object, just create it and call `Fzy.search`.
+  #
+  # NOTE: This class DO NOT dup the haystack it receive in the constructor, storing just a reference to it, so if you change it without creating another `PreparedHaystack` you are going to get a undefined behavior.
   class PreparedHaystack
+    # Return the same haystack used in the constructor
     getter haystack : Array(String)
+    # Cached lowercase version of `haystack`.
     getter lower_haystack : Array(String)
 
     @empty_search_result : Array(Match)?
     @bonus : Array(Array(Float32)?)
 
+    # Creates a new `PreparedHaystack`.
     def initialize(@haystack : Array(String))
       @lower_haystack = @haystack.map(&.downcase)
       @bonus = Array(Array(Float32)?).new(@haystack.size, nil)
     end
 
+    # Return the cached bonus for a haystack at given index.
     def bonus(index) : Array(Float32)
       bonus = @bonus[index]?
       return bonus unless bonus.nil?
@@ -207,13 +235,22 @@ module Fzy
   end
 
   # Search a needle in a haystack and returns an array of matches.
+  #
+  # ```
+  # results = Fzy.search("hey", %w(Hey Halley Whatever))
+  # results.each do |result|
+  #   puts "value: #{result.value}"
+  #   puts "score: #{result.score}"
+  #   puts "  pos: #{result.positions.inspect}"
+  # end
+  # ```
   def search(needle : String, haystack : PreparedHaystack) : Array(Match)
     haystack.search(needle)
   end
 
   # Search a needle in a haystack and returns an array of matches.
   #
-  # Consider using #search(String,PreparedHaystack) if you want to repeat this call with
+  # Consider using `search(String,PreparedHaystack)` if you want to repeat this call with
   # different needles but the same haystack.
   def search(needle : String, haystack : Array(String)) : Array(Match)
     search(needle, PreparedHaystack.new(haystack))

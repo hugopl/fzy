@@ -8,11 +8,11 @@ A Crystal port of awesome [Fzy](https://github.com/jhawthorn/fzy) fuzzy finder a
 
 1. Add the dependency to your `shard.yml`:
 
-   ```yaml
-   dependencies:
-     fzy:
-       github: hugopl/fzy
-   ```
+```yaml
+dependencies:
+  fzy:
+    github: hugopl/fzy
+```
 
 2. Run `shards install`
 
@@ -21,11 +21,11 @@ A Crystal port of awesome [Fzy](https://github.com/jhawthorn/fzy) fuzzy finder a
 ```crystal
 require "fzy"
 
-results = Fzy.search("hey", %w(Hey Halley Whatever))
-results.each do |result|
-  puts "value: #{result.value}"
-  puts "score: #{result.score}"
-  puts "  pos: #{result.positions.inspect}"
+matches = Fzy.search("hey", %w(Hey Halley Whatever))
+matches.each do |match|
+  puts "value: #{matcht.value}"
+  puts "score: #{match.score}"
+  puts "  pos: #{match.positions.inspect}"
 end
 ```
 
