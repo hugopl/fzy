@@ -33,15 +33,32 @@ module Fzy
     end
 
     # :nodoc:
-    def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String)
+    def initialize(needle : String, lower_needle : String, prepared_haystack : PreparedHaystack, index : Int32)
+      haystack = prepared_haystack.haystack[index]
       n = needle.size
       m = haystack.size
-      # avoid MatchComputation when it wont be needed
-      # if n == 0 we also don't need a MatchComputation, however n should never be zero here.
-      computation = MatchComputation.new(needle, lower_needle, haystack, lower_haystack) if m > n && m < 1024
 
-      @positions = positions(needle, haystack, computation)
-      @score = score(needle, haystack, computation)
+      if n.zero? || m.zero? || m > 1024
+        # Unreasonably large candidate: return no score
+        # If it is a valid match it will still be returned, it will
+        # just be ranked below any reasonably sized candidates
+        @score = SCORE_MIN
+        @positions = Array.new(n, -1)
+      elsif n == m
+        # Since this method can only be called with a haystack which
+        # matches needle. If the lengths of the strings are equal the
+        # strings themselves must also be equal (ignoring case).
+        @score = SCORE_MAX
+        @positions = Array.new(n) { |i| i }
+      else
+        d_table = Array.new(n, [] of Float32)
+        m_table = Array.new(n, [] of Float32)
+        compute_match(d_table, m_table, n, m, lower_needle, prepared_haystack.lower_haystack[index], prepared_haystack.bonus(index))
+
+        @positions = positions(n, m, d_table, m_table)
+        @score = m_table[n - 1][m - 1]
+      end
+
       @value = haystack
     end
 
@@ -50,111 +67,9 @@ module Fzy
       other.score <=> @score
     end
 
-    # Finds the score of needle for haystack.
-    private def score(needle : String, haystack : String, computation : MatchComputation? = nil) : Float32
-      n = needle.size
-      m = haystack.size
-
-      # Unreasonably large candidate: return no score
-      # If it is a valid match it will still be returned, it will
-      # just be ranked below any reasonably sized candidates
-      return SCORE_MIN if n.zero? || m.zero? || m > 1024
-      # Since this method can only be called with a haystack which
-      # matches needle. If the lengths of the strings are equal the
-      # strings themselves must also be equal (ignoring case).
-      return SCORE_MAX if n === m
-
-      computation ||= MatchComputation.new(needle, needle.downcase, haystack, haystack.downcase)
-      computation.m_table[n - 1][m - 1]
-    end
-
-    private def positions(needle : String, haystack : String, computation : MatchComputation? = nil) : Array(Int32)
-      n = needle.size
-      m = haystack.size
-
-      positions = Array.new(n, -1)
-      return positions if n.zero? || m.zero? || m > 1024
-      return positions.map_with_index! { |_e, i| i } if n == m
-
-      computation ||= MatchComputation.new(needle, needle.downcase, haystack, haystack.downcase)
-
-      d_table = computation.d_table
-      m_table = computation.m_table
-
-      # backtrack to find the positions of optimal matching
-      match_required = false
-
-      (n - 1).downto(0) do |i|
-        (m - 1).downto(0) do |j|
-          # There may be multiple paths which result in
-          # the optimal weight.
-          #
-          # For simplicity, we will pick the first one
-          # we encounter, the latest in the candidate
-          # string.
-          if (d_table[i][j] != Fzy::SCORE_MIN) && (match_required || d_table[i][j] == m_table[i][j])
-            # If this score was determined using
-            # SCORE_MATCH_CONSECUTIVE, the
-            # previous character MUST be a match
-
-            match_required = i > 0 && j > 0 && m_table[i][j] == (d_table[i - 1][j - 1] + Fzy::SCORE_MATCH_CONSECUTIVE)
-            positions[i] = j
-            break
-          end
-        end
-      end
-
-      positions
-    end
-  end
-
-  class MatchComputation
-    getter! d_table : Array(Array(Float32))?
-    getter! m_table : Array(Array(Float32))?
-
-    def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String)
-      compute(needle, lower_needle, haystack, lower_haystack)
-    end
-
-    private def precompute_bonus(haystack) : Array(Float32)
-      # Which positions are beginning of words
-      m = haystack.size
-      match_bonus = Array(Float32).new(m)
-
-      last_ch = '/'
-
-      Array(Float32).new(m) do |i|
-        ch = haystack[i]
-        match_bonus = if last_ch === '/'
-                        SCORE_MATCH_SLASH
-                      elsif last_ch === '-' || last_ch === '_' || last_ch === ' '
-                        SCORE_MATCH_WORD
-                      elsif last_ch === '.'
-                        SCORE_MATCH_DOT
-                      elsif last_ch.lowercase? && ch.uppercase?
-                        SCORE_MATCH_CAPITAL
-                      else
-                        0_f32
-                      end
-        last_ch = ch
-        match_bonus
-      end
-    end
-
-    private def compute(needle : String, lower_needle : String, haystack : String, lower_haystack : String) : Nil
-      d_table = @d_table
-      m_table = @m_table
-      return if d_table || m_table
-
-      n = needle.size
-      m = haystack.size
-      d_table = Array.new(n, [] of Float32)
-      m_table = Array.new(n, [] of Float32)
-
-      match_bonus = precompute_bonus(haystack)
-
-      # D[][] Stores the best score for this position ending with a match.
-      # M[][] Stores the best possible score at this position.
+    private def compute_match(d_table, m_table, n, m, lower_needle, lower_haystack, match_bonus)
+      # d_table[][] Stores the best score for this position ending with a match.
+      # m_table[][] Stores the best possible score at this position.
 
       prev_score = SCORE_MIN
       n.times do |i|
@@ -183,17 +98,80 @@ module Fzy
           end
         end
       end
-      @d_table = d_table
-      @m_table = m_table
+    end
+
+    private def positions(n : Int32, m : Int32, d_table, m_table) : Array(Int32)
+      positions = Array.new(n, -1)
+
+      # backtrack to find the positions of optimal matching
+      match_required = false
+
+      (n - 1).downto(0) do |i|
+        (m - 1).downto(0) do |j|
+          # There may be multiple paths which result in
+          # the optimal weight.
+          #
+          # For simplicity, we will pick the first one
+          # we encounter, the latest in the candidate
+          # string.
+          if (d_table[i][j] != Fzy::SCORE_MIN) && (match_required || d_table[i][j] == m_table[i][j])
+            # If this score was determined using
+            # SCORE_MATCH_CONSECUTIVE, the
+            # previous character MUST be a match
+
+            match_required = i > 0 && j > 0 && m_table[i][j] == (d_table[i - 1][j - 1] + Fzy::SCORE_MATCH_CONSECUTIVE)
+            positions[i] = j
+            break
+          end
+        end
+      end
+
+      positions
     end
   end
 
   class PreparedHaystack
-    @lower_haystack : Array(String)
+    getter haystack : Array(String)
+    getter lower_haystack : Array(String)
+
     @empty_search_result : Array(Match)?
+    @bonus : Array(Array(Float32)?)
 
     def initialize(@haystack : Array(String))
       @lower_haystack = @haystack.map(&.downcase)
+      @bonus = Array(Array(Float32)?).new(@haystack.size, nil)
+    end
+
+    def bonus(index) : Array(Float32)
+      bonus = @bonus[index]?
+      return bonus unless bonus.nil?
+
+      @bonus[index] = precompute_bonus(@haystack[index])
+    end
+
+    private def precompute_bonus(haystack) : Array(Float32)
+      # Which positions are beginning of words
+      m = haystack.size
+      match_bonus = Array(Float32).new(m)
+
+      last_ch = '/'
+
+      Array(Float32).new(m) do |i|
+        ch = haystack[i]
+        match_bonus = if last_ch == '/'
+                        SCORE_MATCH_SLASH
+                      elsif last_ch == '-' || last_ch == '_' || last_ch == ' '
+                        SCORE_MATCH_WORD
+                      elsif last_ch == '.'
+                        SCORE_MATCH_DOT
+                      elsif last_ch.lowercase? && ch.uppercase?
+                        SCORE_MATCH_CAPITAL
+                      else
+                        0_f32
+                      end
+        last_ch = ch
+        match_bonus
+      end
     end
 
     private def empty_search_result
@@ -211,7 +189,7 @@ module Fzy
       @lower_haystack.each_with_index do |lower_hay, index|
         next unless match?(lower_needle, lower_hay)
 
-        matches << Match.new(needle, lower_needle, @haystack[index], lower_hay)
+        matches << Match.new(needle, lower_needle, self, index)
       end
       matches
     end
