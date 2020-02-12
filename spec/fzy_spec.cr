@@ -108,26 +108,30 @@ describe Fzy do
 
   context "positions" do
     it "positions consecutive" do
-      Fzy.positions("amo", "app/models/foo").should eq([0, 4, 5])
+      Fzy.search("amo", %w(app/models/foo)).first.positions.should eq([0, 4, 5])
     end
 
     it "positions start of word" do
       # We should prefer matching the 'o' in order, since it's the beginning
       # of a word.
-      Fzy.positions("amor", "app/models/order").should eq([0, 4, 11, 12])
+      Fzy.search("amor", %w(app/models/order)).first.positions.should eq([0, 4, 11, 12])
     end
 
     it "positions no bonuses" do
-      Fzy.positions("as", "tags").should eq([1, 3])
-      Fzy.positions("as", "examples.txt").should eq([2, 7])
+      Fzy.search("as", %w(tags)).first.positions.should eq([1, 3])
+      Fzy.search("as", %w(examples.txt)).first.positions.should eq([2, 7])
     end
 
     it "positions multiple candidates start of words" do
-      Fzy.positions("abc", "a/a/b/c/c").should eq([2, 4, 6])
+      Fzy.search("abc", %w(a/a/b/c/c)).first.positions.should eq([2, 4, 6])
     end
 
     it "positions exact match" do
-      Fzy.positions("foo", "foo").should eq([0, 1, 2])
+      Fzy.search("foo", %w(foo)).first.positions.should eq([0, 1, 2])
+    end
+
+    it "positions empty string" do
+      Fzy.search("", %w(foo)).first.positions.should eq([] of Int32)
     end
   end
 end

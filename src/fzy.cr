@@ -40,7 +40,7 @@ module Fzy
       # if n == 0 we also don't need a MatchComputation, however n should never be zero here.
       computation = MatchComputation.new(needle, lower_needle, haystack, lower_haystack) if m > n && m < 1024
 
-      @positions = Fzy.positions(needle, haystack, computation)
+      @positions = positions(needle, haystack, computation)
       @score = Fzy.score(needle, haystack, computation)
       @value = haystack
     end
@@ -48,6 +48,45 @@ module Fzy
     # A match is greater than other if it has a greater score.
     def <=>(other)
       other.score <=> @score
+    end
+
+    private def positions(needle : String, haystack : String, computation : MatchComputation? = nil) : Array(Int32)
+      n = needle.size
+      m = haystack.size
+
+      positions = Array.new(n, -1)
+      return positions if n.zero? || m.zero? || m > 1024
+      return positions.map_with_index! { |_e, i| i } if n == m
+
+      computation ||= MatchComputation.new(needle, needle.downcase, haystack, haystack.downcase)
+
+      d_table = computation.d_table
+      m_table = computation.m_table
+
+      # backtrack to find the positions of optimal matching
+      match_required = false
+
+      (n - 1).downto(0) do |i|
+        (m - 1).downto(0) do |j|
+          # There may be multiple paths which result in
+          # the optimal weight.
+          #
+          # For simplicity, we will pick the first one
+          # we encounter, the latest in the candidate
+          # string.
+          if (d_table[i][j] != Fzy::SCORE_MIN) && (match_required || d_table[i][j] == m_table[i][j])
+            # If this score was determined using
+            # SCORE_MATCH_CONSECUTIVE, the
+            # previous character MUST be a match
+
+            match_required = i > 0 && j > 0 && m_table[i][j] == (d_table[i - 1][j - 1] + Fzy::SCORE_MATCH_CONSECUTIVE)
+            positions[i] = j
+            break
+          end
+        end
+      end
+
+      positions
     end
   end
 
@@ -200,44 +239,5 @@ module Fzy
 
     computation ||= MatchComputation.new(needle, needle.downcase, haystack, haystack.downcase)
     computation.m_table[n - 1][m - 1]
-  end
-
-  def positions(needle : String, haystack : String, computation : MatchComputation? = nil) : Array(Int32)
-    n = needle.size
-    m = haystack.size
-
-    positions = Array.new(n, -1)
-    return positions if n.zero? || m.zero? || m > 1024
-    return positions.map_with_index! { |_e, i| i } if n == m
-
-    computation ||= MatchComputation.new(needle, needle.downcase, haystack, haystack.downcase)
-
-    d_table = computation.d_table
-    m_table = computation.m_table
-
-    # backtrack to find the positions of optimal matching
-    match_required = false
-
-    (n - 1).downto(0) do |i|
-      (m - 1).downto(0) do |j|
-        # There may be multiple paths which result in
-        # the optimal weight.
-        #
-        # For simplicity, we will pick the first one
-        # we encounter, the latest in the candidate
-        # string.
-        if (d_table[i][j] != Fzy::SCORE_MIN) && (match_required || d_table[i][j] == m_table[i][j])
-          # If this score was determined using
-          # SCORE_MATCH_CONSECUTIVE, the
-          # previous character MUST be a match
-
-          match_required = i > 0 && j > 0 && m_table[i][j] == (d_table[i - 1][j - 1] + Fzy::SCORE_MATCH_CONSECUTIVE)
-          positions[i] = j
-          break
-        end
-      end
-    end
-
-    positions
   end
 end
