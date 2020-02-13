@@ -40,6 +40,26 @@ score: 1.87
   pos: [0, 4, 5]
 ```
 
+If you need to do many searches on the same set of data you can speed up things by
+using a prepared haystack.
+
+```crystal
+require "fzy"
+
+haystack = %w(Hey Halley Whatever)
+prepared_haystack = PreparedHaystack.new(haystack)
+matches = Fzy.search("hey", prepared_haystack)
+matches.each do |match|
+  puts "value: #{matcht.value}"
+  puts "score: #{match.score}"
+  puts "  pos: #{match.positions.inspect}"
+end
+
+# Reusing the prepared haystack makes the search faster.
+matches = Fzy.search("ho let's go!", prepared_haystack)
+```
+
+
 ## Contributing
 
 1. Fork it (<https://github.com/hugopl/fzy/fork>)
