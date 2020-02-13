@@ -14,9 +14,9 @@ describe Fzy do
   context "search" do
     it "works" do
       files = %w(
-        src/main.cr
         lib/fuzzy_match/.gitignore
         lib/fuzzy_match/LICENSE
+        src/main.cr
         lib/version_from_shard/LICENSE
         lib/fuzzy_match/src/fuzzy_match/version.cr
         lib/fuzzy_match/.tool-versions

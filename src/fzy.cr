@@ -219,7 +219,7 @@ module Fzy
 
         matches << Match.new(needle, lower_needle, self, index)
       end
-      matches
+      matches.sort!
     end
 
     private def match?(needle : String, haystack : String) : Bool
