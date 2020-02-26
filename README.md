@@ -23,7 +23,7 @@ require "fzy"
 
 matches = Fzy.search("hey", %w(Hey Halley Whatever))
 matches.each do |match|
-  puts "value: #{matcht.value}"
+  puts "value: #{match.value}"
   puts "score: #{match.score}"
   puts "  pos: #{match.positions.inspect}"
 end
@@ -50,7 +50,7 @@ haystack = %w(Hey Halley Whatever)
 prepared_haystack = PreparedHaystack.new(haystack)
 matches = Fzy.search("hey", prepared_haystack)
 matches.each do |match|
-  puts "value: #{matcht.value}"
+  puts "value: #{match.value}"
   puts "score: #{match.score}"
   puts "  pos: #{match.positions.inspect}"
 end
