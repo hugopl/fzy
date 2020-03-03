@@ -1,4 +1,4 @@
-## Unreleased
+## [0.2.2] - 2020-03-02
 ### Fix
 - Fix match positions calculation for long strings.
 
