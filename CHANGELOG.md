@@ -1,6 +1,10 @@
+## Unreleased
+### Fix
+- Fix match positions calculation for long strings.
+
 ## [0.2.1] - 2020-02-13
 ### Fix
-- Fiz Fzy.search not returning sorted results.
+- Fix Fzy.search not returning sorted results.
 
 ## [0.2.0] - 2020-02-12
 ### Added

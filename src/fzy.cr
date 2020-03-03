@@ -116,8 +116,11 @@ module Fzy
       # backtrack to find the positions of optimal matching
       match_required = false
 
-      (n - 1).downto(0) do |i|
-        (m - 1).downto(0) do |j|
+      i_iterator = (n - 1).downto(0)
+      j_iterator = (m - 1).downto(0)
+
+      i_iterator.each do |i|
+        j_iterator.each do |j|
           # There may be multiple paths which result in
           # the optimal weight.
           #

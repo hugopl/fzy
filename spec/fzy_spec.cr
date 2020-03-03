@@ -133,5 +133,17 @@ describe Fzy do
     it "positions empty string" do
       Fzy.search("", %w(foo)).first.positions.should eq([] of Int32)
     end
+
+    it "are sorted when double letters later in string" do
+      Fzy.search("bookmarks", %w(clear_bookmarks)).first.positions.should eq([6, 7, 8, 9, 10, 11, 12, 13, 14])
+    end
+
+    it "are sorted when double letters beginning of string" do
+      Fzy.search("aandom", %w(aandom_baandom)).first.positions.should eq([0, 1, 2, 3, 4, 5])
+    end
+
+    it "favors start of match" do
+      Fzy.search("andom", %w(andom_random)).first.positions.should eq([0, 1, 2, 3, 4])
+    end
   end
 end
