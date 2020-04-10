@@ -1,9 +1,13 @@
+## [0.3.0] - 2020-04-10
+### Fixed
+- Fix build with Crystal 0.34.0.
+
 ## [0.2.2] - 2020-03-02
-### Fix
+### Fixed
 - Fix match positions calculation for long strings.
 
 ## [0.2.1] - 2020-02-13
-### Fix
+### Fixed
 - Fix Fzy.search not returning sorted results.
 
 ## [0.2.0] - 2020-02-12

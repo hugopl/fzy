@@ -1,15 +1,15 @@
 name: fzy
-version: 0.2.2
+version: 0.3.0
 
 authors:
   - Hugo Parente Lima <hugo.pl@gmail.com>
 
-crystal: 0.33.0
+crystal: 0.34.0
 description: String fuzzy matcher lib, port of Fyz algorithm.
 
 dependencies:
   version_from_shard:
     github: hugopl/version_from_shard
-    version: '~> 1.1.0'
+    version: '~> 1.2.1'
 
 license: MIT
