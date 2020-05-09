@@ -21,11 +21,12 @@ dependencies:
 ```crystal
 require "fzy"
 
-matches = Fzy.search("hey", %w(Hey Halley Whatever))
+matches = Fzy.search("hey", %w(Hey Whatever Halley))
 matches.each do |match|
   puts "value: #{match.value}"
   puts "score: #{match.score}"
   puts "  pos: #{match.positions.inspect}"
+  puts "index: #{match.index}"
 end
 ```
 
@@ -35,9 +36,11 @@ Should print
 value: Hey
 score: Infinity
   pos: [0, 1, 2]
+index: 0
 value: Halley
 score: 1.87
   pos: [0, 4, 5]
+index: 2
 ```
 
 If you need to do many searches on the same set of data you can speed up things by

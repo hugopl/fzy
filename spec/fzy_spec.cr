@@ -27,6 +27,26 @@ describe Fzy do
     end
   end
 
+  context "index" do
+    it "should be stored in matches" do
+      files = %w(
+        lib/fuzzy_match/.gitignore
+        lib/fuzzy_match/LICENSE
+        src/main.cr
+        lib/version_from_shard/LICENSE
+        lib/fuzzy_match/src/fuzzy_match/version.cr
+        lib/fuzzy_match/.tool-versions
+        lib/fuzzy_match/.editorconfig
+      )
+      results = Fzy.search("LICENSE", files)
+      results.size.should eq(2)
+      results[0].value.should eq("lib/fuzzy_match/LICENSE")
+      results[0].index.should eq(1)
+      results[1].value.should eq("lib/version_from_shard/LICENSE")
+      results[1].index.should eq(3)
+    end
+  end
+
   # Tests below ported from https://github.com/jhawthorn/fzy.js
   context "score" do
     it "should prefer starts of words" do

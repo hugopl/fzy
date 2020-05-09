@@ -37,14 +37,16 @@ module Fzy
     getter value
     # Match score.
     getter score
+    # Index of this match on haystack.
+    getter index
 
     # :nodoc:
-    def initialize(@value : String, @score : Float32, @positions : Array(Int32))
+    def initialize(@value : String, @score : Float32, @positions : Array(Int32), @index : Int32)
     end
 
     # :nodoc:
-    def initialize(needle : String, lower_needle : String, prepared_haystack : PreparedHaystack, index : Int32)
-      haystack = prepared_haystack.haystack[index]
+    def initialize(needle : String, lower_needle : String, prepared_haystack : PreparedHaystack, @index : Int32)
+      haystack = prepared_haystack.haystack[@index]
       n = needle.size
       m = haystack.size
 
@@ -63,7 +65,7 @@ module Fzy
       else
         d_table = Array.new(n, [] of Float32)
         m_table = Array.new(n, [] of Float32)
-        compute_match(d_table, m_table, n, m, lower_needle, prepared_haystack.lower_haystack[index], prepared_haystack.bonus(index))
+        compute_match(d_table, m_table, n, m, lower_needle, prepared_haystack.lower_haystack[@index], prepared_haystack.bonus(@index))
 
         @positions = positions(n, m, d_table, m_table)
         @score = m_table[n - 1][m - 1]
@@ -208,7 +210,7 @@ module Fzy
     private def empty_search_result
       @empty_search_result ||= begin
         positions = [] of Int32
-        @haystack.map { |e| Match.new(e, SCORE_MIN, positions) }
+        @haystack.map_with_index { |needle, i| Match.new(needle, SCORE_MIN, positions, i) }
       end
     end
 

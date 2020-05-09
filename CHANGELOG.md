@@ -1,3 +1,7 @@
+## Unreleased
+### Added
+ - Added match.index, to return the index of the match on haystack
+
 ## [0.3.0] - 2020-04-10
 ### Fixed
 - Fix build with Crystal 0.34.0.
