@@ -1,6 +1,6 @@
-## Unreleased
+## [0.4.0] - 2020-05-17
 ### Added
- - Added match.index, to return the index of the match on haystack
+ - Added match.index, to return the index of the match on haystack.
 
 ## [0.3.0] - 2020-04-10
 ### Fixed
