@@ -26,8 +26,8 @@ module Fzy
   # :nodoc:
   SCORE_MATCH_DOT = 0.6_f32
 
-  # A search operation returns an array of Match objects, these objects stores the matching score and the
-  # position of matched characters. See `Fzy.search`
+  # A search operation returns an array of Match objects.
+  # See `Fzy.search`
   class Match
     include Comparable(Match)
 
