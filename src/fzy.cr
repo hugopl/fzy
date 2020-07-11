@@ -168,6 +168,11 @@ module Fzy
     @empty_search_result : Array(Match)?
     @bonus : Array(Array(Float32)?)
 
+    # Return true if haystack is empty.
+    delegate empty?, to: @haystack
+    # Return true if haystack has some item.
+    delegate any?, to: @haystack
+
     # Creates a new `PreparedHaystack`.
     def initialize(@haystack : Array(String))
       @lower_haystack = @haystack.map(&.downcase)
