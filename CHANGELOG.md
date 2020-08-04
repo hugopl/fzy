@@ -1,3 +1,7 @@
+## [0.5.0] - 2020-08-03
+### Added
+ - Added Add `empty?` and `any?` to PreparedHaystack.
+
 ## [0.4.0] - 2020-05-17
 ### Added
  - Added match.index, to return the index of the match on haystack.
