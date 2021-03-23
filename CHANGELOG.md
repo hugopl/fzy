@@ -1,3 +1,7 @@
+## [0.5.1] - 2021-03-23
+### Changed
+ - Adjusted shards.yml for Crystal 1.0.0.
+
 ## [0.5.0] - 2020-08-03
 ### Added
  - Added Add `empty?` and `any?` to PreparedHaystack.
