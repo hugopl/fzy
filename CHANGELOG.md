@@ -1,3 +1,7 @@
+## [0.5.2] - 2021-03-26
+### Changed
+ - Adjusted the mess I did with shards.yml on 0.5.1 release.
+
 ## [0.5.1] - 2021-03-23
 ### Changed
  - Adjusted shards.yml for Crystal 1.0.0.
