@@ -50,7 +50,7 @@ using a prepared haystack.
 require "fzy"
 
 haystack = %w(Hey Halley Whatever)
-prepared_haystack = PreparedHaystack.new(haystack)
+prepared_haystack = Fzy::PreparedHaystack.new(haystack)
 matches = Fzy.search("hey", prepared_haystack)
 matches.each do |match|
   puts "value: #{match.value}"
