@@ -1,12 +1,10 @@
-require "version_from_shard"
-
 require "./fzy/match"
 require "./fzy/prepared_haystack"
 
 module Fzy
   extend self
 
-  VERSION = "0.5.3"
+  VERSION = "0.5.4"
 
   # Search a needle in a haystack and returns an array of matches.
   #

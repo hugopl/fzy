@@ -1,6 +1,10 @@
+## [0.5.4] - 2023-01-02
+### Changed
+- Fix bad release 😅️
+
 ## [0.5.3] - 2023-01-02
 ### Changed
-- Removed version_from_shard dependency (#1)
+- Removed version_from_shard dependency (https://github.com/hugopl/version_from_shard/issues/1)
 
 ## [0.5.2] - 2021-03-26
 ### Changed
