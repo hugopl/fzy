@@ -6,7 +6,7 @@ require "./fzy/prepared_haystack"
 module Fzy
   extend self
 
-  VersionFromShard.declare
+  VERSION = "0.5.3"
 
   # Search a needle in a haystack and returns an array of matches.
   #

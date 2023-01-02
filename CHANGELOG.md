@@ -1,3 +1,7 @@
+## [0.5.3] - 2023-01-02
+### Changed
+- Removed version_from_shard dependency (#1)
+
 ## [0.5.2] - 2021-03-26
 ### Changed
 - Adjusted the mess I did with shards.yml on 0.5.1 release.
