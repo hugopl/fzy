@@ -1,18 +1,18 @@
 ## [0.5.2] - 2021-03-26
 ### Changed
- - Adjusted the mess I did with shards.yml on 0.5.1 release.
+- Adjusted the mess I did with shards.yml on 0.5.1 release.
 
 ## [0.5.1] - 2021-03-23
 ### Changed
- - Adjusted shards.yml for Crystal 1.0.0.
+- Adjusted shards.yml for Crystal 1.0.0.
 
 ## [0.5.0] - 2020-08-03
 ### Added
- - Added Add `empty?` and `any?` to PreparedHaystack.
+- Added Add `empty?` and `any?` to PreparedHaystack.
 
 ## [0.4.0] - 2020-05-17
 ### Added
- - Added match.index, to return the index of the match on haystack.
+- Added match.index, to return the index of the match on haystack.
 
 ## [0.3.0] - 2020-04-10
 ### Fixed
