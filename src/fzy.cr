@@ -4,7 +4,7 @@ require "./fzy/prepared_haystack"
 module Fzy
   extend self
 
-  VERSION = "0.5.4"
+  VERSION = {{ `shards version #{__DIR__}`.strip.stringify }}
 
   # Search a needle in a haystack and returns an array of matches.
   #

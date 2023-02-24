@@ -1,6 +1,10 @@
 require "./spec_helper"
 
 describe Fzy do
+  it "has a version number" do
+    Fzy::VERSION.should match /\A\d+\.\d+\.\d+\z/
+  end
+
   context "match" do
     it "works" do
       Fzy.search("amor", %w(app/models/order)).first.value.should eq("app/models/order")
