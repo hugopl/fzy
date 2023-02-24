@@ -1,5 +1,9 @@
+## [0.5.5] - 2023-02-24
+### Fixed
+- Use shards executable to generate the Fzy::VERSION constant contents.
+
 ## [0.5.4] - 2023-01-02
-### Changed
+### Fixed
 - Fix bad release 😅️
 
 ## [0.5.3] - 2023-01-02
