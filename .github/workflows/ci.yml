@@ -2,13 +2,18 @@ name: build
 on:
   push:
   pull_request:
-    branches: [master]
+  schedule:
+    - cron: '20 16 * * 0'
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Download source
         uses: actions/checkout@v2
+      - name: Crystal Ameba Linter
+        uses: crystal-ameba/github-action@v0.7.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install Crystal
         uses: oprypin/install-crystal@v1
       - name: Check formatting
