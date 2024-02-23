@@ -81,7 +81,7 @@ module Fzy
       @lower_haystack.each_with_index do |lower_hay, index|
         next unless match?(lower_needle, lower_hay)
 
-        matches << Match.new(needle, lower_needle, self, index)
+        matches << Match.new(needle, lower_needle, @haystack[index], lower_hay, bonus(index), index)
       end
       matches.sort!
     end

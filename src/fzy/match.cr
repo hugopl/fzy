@@ -39,8 +39,7 @@ module Fzy
     end
 
     # :nodoc:
-    def initialize(needle : String, lower_needle : String, prepared_haystack : PreparedHaystack, @index : Int32)
-      haystack = prepared_haystack.haystack[@index]
+    def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String, bonus : Array(Float32), @index)
       n = needle.size
       m = haystack.size
 
@@ -59,7 +58,7 @@ module Fzy
       else
         d_table = Array.new(n, [] of Float32)
         m_table = Array.new(n, [] of Float32)
-        compute_match(d_table, m_table, n, m, lower_needle, prepared_haystack.lower_haystack[@index], prepared_haystack.bonus(@index))
+        compute_match(d_table, m_table, n, m, lower_needle, lower_haystack, bonus)
 
         @positions = positions(n, m, d_table, m_table)
         @score = m_table[n - 1][m - 1]
