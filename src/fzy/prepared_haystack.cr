@@ -19,7 +19,6 @@ module Fzy
     # Cached lowercase version of `haystack`.
     getter lower_haystack : Array(String)
 
-    @empty_search_result : Array(Match)?
     @bonus : Array(Array(Float32)?)
 
     # Return true if haystack is empty.
@@ -66,15 +65,8 @@ module Fzy
       end
     end
 
-    private def empty_search_result
-      @empty_search_result ||= begin
-        positions = [] of Int32
-        @haystack.map_with_index { |needle, i| Match.new(needle, SCORE_MIN, positions, i) }
-      end
-    end
-
     def search(needle : String) : Array(Match)
-      return empty_search_result if needle.empty?
+      return [] of Match if needle.empty?
 
       lower_needle = needle.downcase
       matches = [] of Match

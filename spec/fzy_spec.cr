@@ -91,9 +91,9 @@ describe Fzy do
 
     it "score empty query" do
       # Empty query always results in Fzy::SCORE_MIN
-      Fzy.search("", [""]).first.score.should eq(Fzy::SCORE_MIN)
-      Fzy.search("", ["a"]).first.score.should eq(Fzy::SCORE_MIN)
-      Fzy.search("", ["bb"]).first.score.should eq(Fzy::SCORE_MIN)
+      Fzy.search("", [""]).size.should eq(0)
+      Fzy.search("", ["a"]).size.should eq(0)
+      Fzy.search("", ["bb"]).size.should eq(0)
     end
 
     it "score gaps" do
@@ -152,10 +152,6 @@ describe Fzy do
 
     it "positions exact match" do
       Fzy.search("foo", %w(foo)).first.positions.should eq([0, 1, 2])
-    end
-
-    it "positions empty string" do
-      Fzy.search("", %w(foo)).first.positions.should eq([] of Int32)
     end
 
     it "are sorted when double letters later in string" do
