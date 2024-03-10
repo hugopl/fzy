@@ -39,7 +39,7 @@ module Fzy
     end
 
     # :nodoc:
-    def initialize(lowercase_needle : String, haystack : String, bonus : Array(Float32), @index)
+    def initialize(lowercase_needle : String, haystack : String, bonus_func : BonusFunction, @index)
       n = lowercase_needle.size
       m = haystack.size
 
@@ -58,7 +58,7 @@ module Fzy
       else
         d_table = Array.new(n, [] of Float32)
         m_table = Array.new(n, [] of Float32)
-        compute_match(d_table, m_table, n, m, lowercase_needle, haystack, bonus)
+        compute_match(d_table, m_table, n, m, lowercase_needle, haystack, bonus_func)
 
         @positions = positions(n, m, d_table, m_table)
         @score = m_table[n - 1][m - 1]
@@ -72,7 +72,7 @@ module Fzy
       other.score <=> @score
     end
 
-    private def compute_match(d_table : Array, m_table : Array, n : Int, m : Int, lowercase_needle : String, haystack : String, match_bonus)
+    private def compute_match(d_table : Array, m_table : Array, n : Int, m : Int, lowercase_needle : String, haystack : String, bonus_func)
       # d_table[][] Stores the best score for this position ending with a match.
       # m_table[][] Stores the best possible score at this position.
 
@@ -88,11 +88,10 @@ module Fzy
           if lowercase_needle[i] == haystack[j].downcase
             score = SCORE_MIN
             if i.zero?
-              score = (j * SCORE_GAP_LEADING) + match_bonus[j]
+              score = (j * SCORE_GAP_LEADING) + bonus_func.call(haystack, j)
             elsif j > 0 # i > 0 && j > 0
-              score = Math.max(
-                m_table[i - 1][j - 1] + match_bonus[j],
-                # consecutive match, doesn't stack with match_bonus
+              # consecutive match, doesn't stack with match_bonus
+              score = Math.max(m_table[i - 1][j - 1] + bonus_func.call(haystack, j),
                 d_table[i - 1][j - 1] + SCORE_MATCH_CONSECUTIVE)
             end
             d_table[i][j] = score

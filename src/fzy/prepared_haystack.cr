@@ -1,4 +1,23 @@
 module Fzy
+  alias BonusFunction = Proc(String, Int32, Float32)
+
+  def self.file_path_bonus(item : String, i : Int32) : Float32
+    last_ch = i.zero? ? '/' : item[i - 1]
+    ch = item[i]
+
+    if last_ch == '/'
+      SCORE_MATCH_SLASH
+    elsif last_ch == '-' || last_ch == '_' || last_ch == ' '
+      SCORE_MATCH_WORD
+    elsif last_ch == '.'
+      SCORE_MATCH_DOT
+    elsif last_ch.lowercase? && ch.uppercase?
+      SCORE_MATCH_CAPITAL
+    else
+      0_f32
+    end
+  end
+
   # This class should be used if you plan to do more than one search on the same haystack.
   # It just cache some stuff making following searches faster.
   #
@@ -17,8 +36,6 @@ module Fzy
     # Return the same haystack used in the constructor
     getter haystack : Array(String)
 
-    @bonus : Array(Array(Float32)?)
-
     # Return true if haystack is empty.
     delegate empty?, to: @haystack
     # Return true if haystack has some item.
@@ -26,40 +43,6 @@ module Fzy
 
     # Creates a new `PreparedHaystack`.
     def initialize(@haystack : Array(String))
-      @bonus = Array(Array(Float32)?).new(@haystack.size, nil)
-    end
-
-    # Return the cached bonus for a haystack at given index.
-    def bonus(index) : Array(Float32)
-      bonus = @bonus[index]?
-      return bonus unless bonus.nil?
-
-      @bonus[index] = precompute_bonus(@haystack[index])
-    end
-
-    private def precompute_bonus(haystack) : Array(Float32)
-      # Which positions are beginning of words
-      m = haystack.size
-      match_bonus = Array(Float32).new(m)
-
-      last_ch = '/'
-
-      Array(Float32).new(m) do |i|
-        ch = haystack[i]
-        match_bonus = if last_ch == '/'
-                        SCORE_MATCH_SLASH
-                      elsif last_ch == '-' || last_ch == '_' || last_ch == ' '
-                        SCORE_MATCH_WORD
-                      elsif last_ch == '.'
-                        SCORE_MATCH_DOT
-                      elsif last_ch.lowercase? && ch.uppercase?
-                        SCORE_MATCH_CAPITAL
-                      else
-                        0_f32
-                      end
-        last_ch = ch
-        match_bonus
-      end
     end
 
     def search(needle : String) : Array(Match)
@@ -71,7 +54,7 @@ module Fzy
       @haystack.each_with_index do |haystack, index|
         next unless match?(needle, haystack)
 
-        matches << Match.new(needle, haystack, bonus(index), index)
+        matches << Match.new(needle, haystack, ->Fzy.file_path_bonus(String, Int32), index)
       end
       matches.sort!
     end
