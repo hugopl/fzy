@@ -39,8 +39,8 @@ module Fzy
     end
 
     # :nodoc:
-    def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String, bonus : Array(Float32), @index)
-      n = needle.size
+    def initialize(lowercase_needle : String, haystack : String, bonus : Array(Float32), @index)
+      n = lowercase_needle.size
       m = haystack.size
 
       if n.zero? || m.zero? || m > 1024
@@ -58,7 +58,7 @@ module Fzy
       else
         d_table = Array.new(n, [] of Float32)
         m_table = Array.new(n, [] of Float32)
-        compute_match(d_table, m_table, n, m, lower_needle, lower_haystack, bonus)
+        compute_match(d_table, m_table, n, m, lowercase_needle, haystack, bonus)
 
         @positions = positions(n, m, d_table, m_table)
         @score = m_table[n - 1][m - 1]
@@ -72,7 +72,7 @@ module Fzy
       other.score <=> @score
     end
 
-    private def compute_match(d_table, m_table, n, m, lower_needle, lower_haystack, match_bonus)
+    private def compute_match(d_table : Array, m_table : Array, n : Int, m : Int, lowercase_needle : String, haystack : String, match_bonus)
       # d_table[][] Stores the best score for this position ending with a match.
       # m_table[][] Stores the best possible score at this position.
 
@@ -85,7 +85,7 @@ module Fzy
         gap_score = i == n - 1 ? SCORE_GAP_TRAILING : SCORE_GAP_INNER
 
         m.times do |j|
-          if lower_needle[i] == lower_haystack[j]
+          if lowercase_needle[i] == haystack[j].downcase
             score = SCORE_MIN
             if i.zero?
               score = (j * SCORE_GAP_LEADING) + match_bonus[j]

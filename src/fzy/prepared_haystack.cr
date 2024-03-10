@@ -16,8 +16,6 @@ module Fzy
   class PreparedHaystack
     # Return the same haystack used in the constructor
     getter haystack : Array(String)
-    # Cached lowercase version of `haystack`.
-    getter lower_haystack : Array(String)
 
     @bonus : Array(Array(Float32)?)
 
@@ -28,7 +26,6 @@ module Fzy
 
     # Creates a new `PreparedHaystack`.
     def initialize(@haystack : Array(String))
-      @lower_haystack = @haystack.map(&.downcase)
       @bonus = Array(Array(Float32)?).new(@haystack.size, nil)
     end
 
@@ -68,23 +65,31 @@ module Fzy
     def search(needle : String) : Array(Match)
       return [] of Match if needle.empty?
 
-      lower_needle = needle.downcase
-      matches = [] of Match
-      @lower_haystack.each_with_index do |lower_hay, index|
-        next unless match?(lower_needle, lower_hay)
+      needle = needle.downcase
 
-        matches << Match.new(needle, lower_needle, @haystack[index], lower_hay, bonus(index), index)
+      matches = [] of Match
+      @haystack.each_with_index do |haystack, index|
+        next unless match?(needle, haystack)
+
+        matches << Match.new(needle, haystack, bonus(index), index)
       end
       matches.sort!
     end
 
-    private def match?(needle : String, haystack : String) : Bool
+    private def match?(lowercase_needle : String, haystack : String) : Bool
       offset = 0
-      needle.each_char do |nch|
-        new_offset = haystack.index(nch, offset)
-        return false if new_offset.nil?
+      lowercase_needle.each_char do |nch|
+        new_upcase_offset = haystack.index(nch.upcase, offset)
+        new_downcase_offset = haystack.index(nch, offset)
+        offset = if new_upcase_offset.nil?
+                   return false if new_downcase_offset.nil?
 
-        offset = new_offset + 1
+                   new_downcase_offset + 1
+                 elsif new_downcase_offset.nil?
+                   new_upcase_offset + 1
+                 else
+                   Math.min(new_downcase_offset, new_upcase_offset) + 1
+                 end
       end
       true
     end
