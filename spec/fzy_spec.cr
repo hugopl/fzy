@@ -132,38 +132,38 @@ describe Fzy do
 
   context "positions" do
     it "positions consecutive" do
-      Fzy.search("amo", %w(app/models/foo)).first.positions.should eq([0, 4, 5])
+      Fzy.search("amo", %w(app/models/foo), store_positions: true).first.positions.should eq([0, 4, 5])
     end
 
     it "positions start of word" do
       # We should prefer matching the 'o' in order, since it's the beginning
       # of a word.
-      Fzy.search("amor", %w(app/models/order)).first.positions.should eq([0, 4, 11, 12])
+      Fzy.search("amor", %w(app/models/order), store_positions: true).first.positions.should eq([0, 4, 11, 12])
     end
 
     it "positions no bonuses" do
-      Fzy.search("as", %w(tags)).first.positions.should eq([1, 3])
-      Fzy.search("as", %w(examples.txt)).first.positions.should eq([2, 7])
+      Fzy.search("as", %w(tags), store_positions: true).first.positions.should eq([1, 3])
+      Fzy.search("as", %w(examples.txt), store_positions: true).first.positions.should eq([2, 7])
     end
 
     it "positions multiple candidates start of words" do
-      Fzy.search("abc", %w(a/a/b/c/c)).first.positions.should eq([2, 4, 6])
+      Fzy.search("abc", %w(a/a/b/c/c), store_positions: true).first.positions.should eq([2, 4, 6])
     end
 
     it "positions exact match" do
-      Fzy.search("foo", %w(foo)).first.positions.should eq([0, 1, 2])
+      Fzy.search("foo", %w(foo), store_positions: true).first.positions.should eq([0, 1, 2])
     end
 
     it "are sorted when double letters later in string" do
-      Fzy.search("bookmarks", %w(clear_bookmarks)).first.positions.should eq([6, 7, 8, 9, 10, 11, 12, 13, 14])
+      Fzy.search("bookmarks", %w(clear_bookmarks), store_positions: true).first.positions.should eq([6, 7, 8, 9, 10, 11, 12, 13, 14])
     end
 
     it "are sorted when double letters beginning of string" do
-      Fzy.search("aandom", %w(aandom_baandom)).first.positions.should eq([0, 1, 2, 3, 4, 5])
+      Fzy.search("aandom", %w(aandom_baandom), store_positions: true).first.positions.should eq([0, 1, 2, 3, 4, 5])
     end
 
     it "favors start of match" do
-      Fzy.search("andom", %w(andom_random)).first.positions.should eq([0, 1, 2, 3, 4])
+      Fzy.search("andom", %w(andom_random), store_positions: true).first.positions.should eq([0, 1, 2, 3, 4])
     end
   end
 end

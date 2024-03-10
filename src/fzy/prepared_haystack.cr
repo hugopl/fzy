@@ -45,7 +45,7 @@ module Fzy
     def initialize(@haystack : Array(String))
     end
 
-    def search(needle : String) : Array(Match)
+    def search(needle : String, *, store_positions : Bool = false) : Array(Match)
       return [] of Match if needle.empty?
 
       needle = needle.downcase
@@ -54,7 +54,7 @@ module Fzy
       @haystack.each_with_index do |haystack, index|
         next unless match?(needle, haystack)
 
-        matches << Match.new(needle, haystack, ->Fzy.file_path_bonus(String, Int32), index)
+        matches << Match.new(needle, haystack, ->Fzy.file_path_bonus(String, Int32), store_positions, index)
       end
       matches.sort!
     end

@@ -26,7 +26,7 @@ module Fzy
     include Comparable(Match)
 
     # Array of size of needle string, containing the position of each needle character into haystack string.
-    getter positions
+    getter positions : Array(Int32)?
     # Result of the match.
     getter value
     # Match score.
@@ -39,7 +39,7 @@ module Fzy
     end
 
     # :nodoc:
-    def initialize(lowercase_needle : String, haystack : String, bonus_func : BonusFunction, @index)
+    def initialize(lowercase_needle : String, haystack : String, bonus_func : BonusFunction, store_positions : Bool, @index)
       n = lowercase_needle.size
       m = haystack.size
 
@@ -60,7 +60,7 @@ module Fzy
         m_table = Array.new(n, [] of Float32)
         compute_match(d_table, m_table, n, m, lowercase_needle, haystack, bonus_func)
 
-        @positions = positions(n, m, d_table, m_table)
+        @positions = positions(n, m, d_table, m_table) if store_positions
         @score = m_table[n - 1][m - 1]
       end
 

@@ -16,15 +16,15 @@ module Fzy
   #   puts "  pos: #{result.positions.inspect}"
   # end
   # ```
-  def search(needle : String, haystack : PreparedHaystack) : Array(Match)
-    haystack.search(needle)
+  def search(needle : String, haystack : PreparedHaystack, *, store_positions : Bool = false) : Array(Match)
+    haystack.search(needle, store_positions: store_positions)
   end
 
   # Search a needle in a haystack and returns an array of matches.
   #
   # Consider using `search(String,PreparedHaystack)` if you want to repeat this call with
   # different needles but the same haystack.
-  def search(needle : String, haystack : Array(String)) : Array(Match)
-    search(needle, PreparedHaystack.new(haystack))
+  def search(needle : String, haystack : Array(String), *, store_positions : Bool = false) : Array(Match)
+    search(needle, PreparedHaystack.new(haystack), store_positions: store_positions)
   end
 end
