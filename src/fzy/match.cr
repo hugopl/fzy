@@ -1,7 +1,7 @@
 module Fzy
-  # :nodoc:
+  # Minimum score.
   SCORE_MIN = -Float32::INFINITY
-  # :nodoc:
+  # Maximum score.
   SCORE_MAX = Float32::INFINITY
   # :nodoc:
   SCORE_GAP_LEADING = -0.005_f32
@@ -11,50 +11,36 @@ module Fzy
   SCORE_GAP_INNER = -0.01_f32
   # :nodoc:
   SCORE_MATCH_CONSECUTIVE = 1.0_f32
-  # :nodoc:
-  SCORE_MATCH_SLASH = 0.9_f32
-  # :nodoc:
-  SCORE_MATCH_WORD = 0.8_f32
-  # :nodoc:
-  SCORE_MATCH_CAPITAL = 0.7_f32
-  # :nodoc:
-  SCORE_MATCH_DOT = 0.6_f32
 
   # A search operation returns an array of Match objects.
   # See `Fzy.search`
-  class Match
-    include Comparable(Match)
+  class Match(T)
+    include Comparable(Match(T))
 
     # Array of size of needle string, containing the position of each needle character into haystack string.
     getter positions : Array(Int32)?
     # Result of the match.
-    getter value
+    getter item : T
     # Match score.
-    getter score
-    # Index of this match on haystack.
-    getter index
+    getter score : Float32
 
     # :nodoc:
-    def initialize(@value : String, @score : Float32, @positions : Array(Int32), @index : Int32)
-    end
-
-    # :nodoc:
-    def initialize(lowercase_needle : String, haystack : String, bonus_func : BonusFunction, store_positions : Bool, @index)
+    def initialize(lowercase_needle : String, haystack : String, bonus_func : BonusFunction?, store_positions : Bool, @item)
       n = lowercase_needle.size
       m = haystack.size
+      bonus_func ||= ->(item : T, i : Int32) { 0.0_f32 }
 
       if n.zero? || m.zero? || m > 1024
         # Unreasonably large candidate: return no score
         # If it is a valid match it will still be returned, it will
         # just be ranked below any reasonably sized candidates
         @score = SCORE_MIN
-        @positions = Array.new(n, -1)
       elsif n == m
         # Since this method can only be called with a haystack which
         # matches needle. If the lengths of the strings are equal the
         # strings themselves must also be equal (ignoring case).
         @score = SCORE_MAX
-        @positions = Array.new(n) { |i| i }
+        @positions = Array.new(n) { |i| i } if store_positions
       else
         d_table = Array.new(n, [] of Float32)
         m_table = Array.new(n, [] of Float32)
@@ -65,6 +51,11 @@ module Fzy
       end
 
       @value = haystack
+    end
+
+    # @[Deprecated("Use `Match(T)#item` instead.")]
+    def value : String
+      @item.to_s
     end
 
     # A match is greater than other if it has a greater score.

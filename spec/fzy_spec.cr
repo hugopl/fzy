@@ -7,11 +7,11 @@ describe Fzy do
 
   context "match" do
     it "works" do
-      Fzy.search("amor", %w(app/models/order)).first.value.should eq("app/models/order")
-      Fzy.search("amor", %w(amor)).first.value.should eq("amor")
-      Fzy.search("amor", %w(amora)).first.value.should eq("amora")
-      Fzy.search("amor", %w(amoR)).first.value.should eq("amoR")
-      Fzy.search("amor", %w(amos)).size.should eq(0)
+      Fzy.search_file("amor", %w(app/models/order)).first.value.should eq("app/models/order")
+      Fzy.search_file("amor", %w(amor)).first.value.should eq("amor")
+      Fzy.search_file("amor", %w(amora)).first.value.should eq("amora")
+      Fzy.search_file("amor", %w(amoR)).first.value.should eq("amoR")
+      Fzy.search_file("amor", %w(amos)).size.should eq(0)
     end
   end
 
@@ -26,7 +26,7 @@ describe Fzy do
         lib/fuzzy_match/.tool-versions
         lib/fuzzy_match/.editorconfig
       )
-      results = Fzy.search("main", files)
+      results = Fzy.search_file("main", files)
       results.first.value.should eq("src/main.cr")
     end
   end
@@ -42,12 +42,10 @@ describe Fzy do
         lib/fuzzy_match/.tool-versions
         lib/fuzzy_match/.editorconfig
       )
-      results = Fzy.search("LICENSE", files)
+      results = Fzy.search_file("LICENSE", files)
       results.size.should eq(2)
-      results[0].value.should eq("lib/fuzzy_match/LICENSE")
-      results[0].index.should eq(1)
-      results[1].value.should eq("lib/version_from_shard/LICENSE")
-      results[1].index.should eq(3)
+      results[0].item.should eq("lib/fuzzy_match/LICENSE")
+      results[1].item.should eq("lib/version_from_shard/LICENSE")
     end
   end
 
@@ -55,17 +53,17 @@ describe Fzy do
   context "score" do
     it "should prefer starts of words" do
       # App/Models/Order is better than App/MOdels/zRder
-      Fzy.search("amor", ["app/models/order"]).first.score.should be > Fzy.search("amor", ["app/models/zrder"]).first.score
+      Fzy.search_file("amor", ["app/models/order"]).first.score.should be > Fzy.search_file("amor", ["app/models/zrder"]).first.score
     end
 
     it "should prefer consecutive letters" do
       # App/MOdels/foo is better than App/M/fOo
-      Fzy.search("amo", ["app/m/foo"]).first.score.should be < Fzy.search("amo", ["app/models/foo"]).first.score
+      Fzy.search_file("amo", ["app/m/foo"]).first.score.should be < Fzy.search_file("amo", ["app/models/foo"]).first.score
     end
 
     it "should prefer contiguous over letter following period" do
       # GEMFIle.Lock < GEMFILe
-      Fzy.search("gemfil", ["Gemfile.lock"]).first.score.should be < Fzy.search("gemfil", ["Gemfile"]).first.score
+      Fzy.search_file("gemfil", ["Gemfile.lock"]).first.score.should be < Fzy.search_file("gemfil", ["Gemfile"]).first.score
     end
 
     it "should prefer shorter matches" do
@@ -111,22 +109,24 @@ describe Fzy do
       Fzy.search("aaa", ["*a*aa"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_INNER + Fzy::SCORE_MATCH_CONSECUTIVE)
     end
 
-    it "score slash" do
-      Fzy.search("a", ["/a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_SLASH)
-      Fzy.search("a", ["*/a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_SLASH)
-      Fzy.search("aa", ["a/aa"]).first.score.should eq(Fzy::SCORE_GAP_LEADING*2 + Fzy::SCORE_MATCH_SLASH + Fzy::SCORE_MATCH_CONSECUTIVE)
-    end
+    context "searching files" do
+      it "score slash" do
+        Fzy.search_file("a", ["/a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_SLASH)
+        Fzy.search_file("a", ["*/a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_SLASH)
+        Fzy.search_file("aa", ["a/aa"]).first.score.should eq(Fzy::SCORE_GAP_LEADING*2 + Fzy::SCORE_MATCH_SLASH + Fzy::SCORE_MATCH_CONSECUTIVE)
+      end
 
-    it "score capital" do
-      Fzy.search("a", ["bA"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_CAPITAL)
-      Fzy.search("a", ["baA"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_CAPITAL)
-      Fzy.search("aa", ["baAa"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_CAPITAL + Fzy::SCORE_MATCH_CONSECUTIVE)
-    end
+      it "score capital" do
+        Fzy.search_file("a", ["bA"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_CAPITAL)
+        Fzy.search_file("a", ["baA"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_CAPITAL)
+        Fzy.search_file("aa", ["baAa"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 2 + Fzy::SCORE_MATCH_CAPITAL + Fzy::SCORE_MATCH_CONSECUTIVE)
+      end
 
-    it "score dot" do
-      Fzy.search("a", [".a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_DOT)
-      Fzy.search("a", ["*a.a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 3 + Fzy::SCORE_MATCH_DOT)
-      Fzy.search("a", ["*a.a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_INNER + Fzy::SCORE_MATCH_DOT)
+      it "score dot" do
+        Fzy.search_file("a", [".a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_MATCH_DOT)
+        Fzy.search_file("a", ["*a.a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING * 3 + Fzy::SCORE_MATCH_DOT)
+        Fzy.search_file("a", ["*a.a"]).first.score.should eq(Fzy::SCORE_GAP_LEADING + Fzy::SCORE_GAP_INNER + Fzy::SCORE_MATCH_DOT)
+      end
     end
   end
 
@@ -138,16 +138,16 @@ describe Fzy do
     it "positions start of word" do
       # We should prefer matching the 'o' in order, since it's the beginning
       # of a word.
-      Fzy.search("amor", %w(app/models/order), store_positions: true).first.positions.should eq([0, 4, 11, 12])
+      Fzy.search_file("amor", %w(app/models/order), store_positions: true).first.positions.should eq([0, 4, 11, 12])
     end
 
     it "positions no bonuses" do
       Fzy.search("as", %w(tags), store_positions: true).first.positions.should eq([1, 3])
-      Fzy.search("as", %w(examples.txt), store_positions: true).first.positions.should eq([2, 7])
+      Fzy.search_file("as", %w(examples.txt), store_positions: true).first.positions.should eq([2, 7])
     end
 
     it "positions multiple candidates start of words" do
-      Fzy.search("abc", %w(a/a/b/c/c), store_positions: true).first.positions.should eq([2, 4, 6])
+      Fzy.search_file("abc", %w(a/a/b/c/c), store_positions: true).first.positions.should eq([2, 4, 6])
     end
 
     it "positions exact match" do
@@ -155,15 +155,15 @@ describe Fzy do
     end
 
     it "are sorted when double letters later in string" do
-      Fzy.search("bookmarks", %w(clear_bookmarks), store_positions: true).first.positions.should eq([6, 7, 8, 9, 10, 11, 12, 13, 14])
+      Fzy.search_file("bookmarks", %w(clear_bookmarks), store_positions: true).first.positions.should eq([6, 7, 8, 9, 10, 11, 12, 13, 14])
     end
 
     it "are sorted when double letters beginning of string" do
-      Fzy.search("aandom", %w(aandom_baandom), store_positions: true).first.positions.should eq([0, 1, 2, 3, 4, 5])
+      Fzy.search_file("aandom", %w(aandom_baandom), store_positions: true).first.positions.should eq([0, 1, 2, 3, 4, 5])
     end
 
     it "favors start of match" do
-      Fzy.search("andom", %w(andom_random), store_positions: true).first.positions.should eq([0, 1, 2, 3, 4])
+      Fzy.search_file("andom", %w(andom_random), store_positions: true).first.positions.should eq([0, 1, 2, 3, 4])
     end
   end
 end
