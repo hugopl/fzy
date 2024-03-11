@@ -73,7 +73,14 @@ module Fzy
 
   def search_file(needle : String, haystack : Iterable(T), *,
                   store_positions : Bool = false) : Array(Match(T)) forall T
-    search(needle, haystack, store_positions: store_positions, bonus_func: ->file_path_bonus(T, Int32), &.to_s)
+    search_file(needle, haystack, store_positions: store_positions, &.to_s)
+  end
+
+  def search_file(needle : String, haystack : Iterable(T), *,
+                  store_positions : Bool = false) : Array(Match(T)) forall T
+    search(needle, haystack, store_positions: store_positions, bonus_func: ->file_path_bonus(T, Int32)) do |item|
+      yield(item)
+    end
   end
 
   protected def match?(lowercase_needle : String, haystack : String) : Bool
