@@ -49,29 +49,29 @@ module Fzy
   #   puts "  pos: #{result.positions.inspect}"
   # end
   # ```
-  def search(needle : String, haystack : Iterable(T), *,
+  def search(needle : String, haystack : Enumerable(T), *,
              store_positions : Bool = false,
-             bonus_func : BonusFunction? = nil, &) : Array(Match(T)) forall T
+             bonus_func : BonusFunction? = nil, &block : T -> String?) : Array(Match(T)) forall T
     matches = [] of Match(T)
     return matches if needle.empty?
 
     lowercase_needle = needle.downcase
     haystack.each do |item|
-      haystack_item = yield(item)
-      next unless Fzy.match?(lowercase_needle, haystack_item)
-
-      matches << Match.new(lowercase_needle, haystack_item, bonus_func, store_positions, item)
+      key = block.call(item)
+      if key && Fzy.match?(lowercase_needle, key)
+        matches << Match.new(lowercase_needle, key, bonus_func, store_positions, item)
+      end
     end
     matches.sort!
   end
 
-  def search(needle : String, haystack : Iterable(T), *,
+  def search(needle : String, haystack : Enumerable(T), *,
              store_positions : Bool = false,
              bonus_func : BonusFunction? = nil) : Array(Match(T)) forall T
     search(needle, haystack, store_positions: store_positions, bonus_func: bonus_func, &.to_s)
   end
 
-  def search_file(needle : String, haystack : Iterable(T), *,
+  def search_file(needle : String, haystack : Enumerable(T), *,
                   store_positions : Bool = false) : Array(Match(T)) forall T
     search(needle, haystack, store_positions: store_positions, bonus_func: ->file_path_bonus(T, Int32), &.to_s)
   end

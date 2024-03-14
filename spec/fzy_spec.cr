@@ -15,6 +15,14 @@ describe Fzy do
     end
   end
 
+  context "search using a block" do
+    it "works with different types" do
+      numbers = [1, 2, 3]
+      results = Fzy.search("2abc", numbers) { |i| "#{i}abc" }
+      results.first.item.should eq(2)
+    end
+  end
+
   context "search" do
     it "works" do
       files = %w(
