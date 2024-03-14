@@ -21,6 +21,14 @@ describe Fzy do
       results = Fzy.search("2abc", numbers) { |i| "#{i}abc" }
       results.first.item.should eq(2)
     end
+
+    it "can filter items" do
+      numbers = %w(1 22 222)
+      results = Fzy.search("22", numbers) do |item|
+        item if item != "22"
+      end
+      results.first.item.should eq("222")
+    end
   end
 
   context "search" do

@@ -42,9 +42,9 @@ module Fzy
   # Search a needle in a haystack and returns an array of matches.
   #
   # ```
-  # results = Fzy.search("hey", %w(Hey Halley Whatever))
+  # results = Fzy.search("hey", %w(Hey Halley Whatever), store_positions: true)
   # results.each do |result|
-  #   puts "value: #{result.value}"
+  #   puts " item: #{result.item}"
   #   puts "score: #{result.score}"
   #   puts "  pos: #{result.positions.inspect}"
   # end
