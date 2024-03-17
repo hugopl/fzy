@@ -28,7 +28,7 @@ module Fzy
     def initialize(lowercase_needle : String, haystack : String, bonus_func : BonusFunction?, store_positions : Bool, @item)
       n = lowercase_needle.size
       m = haystack.size
-      bonus_func ||= ->(item : T, i : Int32) { 0.0_f32 }
+      bonus_func ||= ->(item : String, i : Int32) { 0.0_f32 }
 
       if n.zero? || m.zero? || m > 1024
         # Unreasonably large candidate: return no score

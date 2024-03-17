@@ -29,6 +29,20 @@ describe Fzy do
       results = Fzy.search_file("main", files)
       results.first.value.should eq("src/main.cr")
     end
+
+    it "can skip data" do
+      data = [1, 2, 3]
+      matches = Fzy.search("2", data) do |i|
+        i.to_s if i.even?
+      end
+      matches.size.should eq(1)
+      matches[0].item.should eq(2)
+
+      matches = Fzy.search("3", data) do |i|
+        i.to_s if i.even?
+      end
+      matches.size.should eq(0)
+    end
   end
 
   context "index" do
