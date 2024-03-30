@@ -71,21 +71,10 @@ module Fzy
       lower_needle = needle.downcase
       @haystack.each.with_index.compact_map do |item, index|
         lower_hay = @lower_haystack[index]
-        next unless match?(lower_needle, lower_hay)
+        next unless Fzy.match?(lower_needle, lower_hay)
 
         Match.new(needle, lower_needle, @haystack[index], lower_hay, bonus(index), item)
       end.to_a.sort!
-    end
-
-    private def match?(needle : String, haystack : String) : Bool
-      offset = 0
-      needle.each_char do |nch|
-        new_offset = haystack.index(nch, offset)
-        return false if new_offset.nil?
-
-        offset = new_offset + 1
-      end
-      true
     end
   end
 end
