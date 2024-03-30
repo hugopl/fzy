@@ -13,9 +13,9 @@ module Fzy
   # Usually you never need to use any methods from this object, just create it and call `Fzy.search`.
   #
   # NOTE: This class DO NOT dup the haystack it receive in the constructor, storing just a reference to it, so if you change it without creating another `PreparedHaystack` you are going to get a undefined behavior.
-  class PreparedHaystack
+  class PreparedHaystack(T)
     # Return the same haystack used in the constructor
-    getter haystack : Array(String)
+    getter haystack : Array(T)
     # Cached lowercase version of `haystack`.
     getter lower_haystack : Array(String)
 
@@ -27,8 +27,8 @@ module Fzy
     delegate any?, to: @haystack
 
     # Creates a new `PreparedHaystack`.
-    def initialize(@haystack : Array(String))
-      @lower_haystack = @haystack.map(&.downcase)
+    def initialize(@haystack : Array(T))
+      @lower_haystack = @haystack.map(&.to_s.downcase)
       @bonus = Array(Array(Float32)?).new(@haystack.size, nil)
     end
 
@@ -65,17 +65,16 @@ module Fzy
       end
     end
 
-    def search(needle : String) : Array(Match)
-      return [] of Match if needle.empty?
+    def search(needle : String) : Array(Match(T))
+      return [] of Match(T) if needle.empty?
 
       lower_needle = needle.downcase
-      matches = [] of Match
-      @lower_haystack.each_with_index do |lower_hay, index|
+      @haystack.each.with_index.compact_map do |item, index|
+        lower_hay = @lower_haystack[index]
         next unless match?(lower_needle, lower_hay)
 
-        matches << Match.new(needle, lower_needle, @haystack[index], lower_hay, bonus(index), index)
-      end
-      matches.sort!
+        Match.new(needle, lower_needle, @haystack[index], lower_hay, bonus(index), index, item)
+      end.to_a.sort!
     end
 
     private def match?(needle : String, haystack : String) : Bool

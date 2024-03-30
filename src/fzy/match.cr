@@ -22,24 +22,24 @@ module Fzy
 
   # A search operation returns an array of Match objects.
   # See `Fzy.search`
-  class Match
+  class Match(T)
     include Comparable(Match)
 
     # Array of size of needle string, containing the position of each needle character into haystack string.
-    getter positions
-    # Result of the match.
-    getter value
+    getter positions : Array(Int32)
+    # Matched item.
+    getter item : T
     # Match score.
-    getter score
+    getter score : Float32
     # Index of this match on haystack.
-    getter index
+    getter index : Int32
 
     # :nodoc:
-    def initialize(@value : String, @score : Float32, @positions : Array(Int32), @index : Int32)
+    def initialize(@value, @score, @positions, @index, @item)
     end
 
     # :nodoc:
-    def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String, bonus : Array(Float32), @index)
+    def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String, bonus : Array(Float32), @index, @item)
       n = needle.size
       m = haystack.size
 
@@ -65,6 +65,11 @@ module Fzy
       end
 
       @value = haystack
+    end
+
+    @[Deprecated("Use `item` instead")]
+    def value
+      @item.to_s
     end
 
     # A match is greater than other if it has a greater score.
