@@ -29,6 +29,12 @@ describe Fzy do
       results = Fzy.search("main", files)
       results.first.item.should eq("src/main.cr")
     end
+
+    it "search on custom types" do
+      numbers = [1, 2, 3]
+      results = Fzy.search("2", numbers)
+      results.first.item.should eq(2)
+    end
   end
 
   context "index" do

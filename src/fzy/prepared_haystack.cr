@@ -37,10 +37,10 @@ module Fzy
       bonus = @bonus[index]?
       return bonus unless bonus.nil?
 
-      @bonus[index] = precompute_bonus(@haystack[index])
+      @bonus[index] = precompute_bonus(@haystack[index].to_s)
     end
 
-    private def precompute_bonus(haystack) : Array(Float32)
+    private def precompute_bonus(haystack : String) : Array(Float32)
       # Which positions are beginning of words
       m = haystack.size
       match_bonus = Array(Float32).new(m)
@@ -73,7 +73,7 @@ module Fzy
         lower_hay = @lower_haystack[index]
         next unless Fzy.match?(lower_needle, lower_hay)
 
-        Match.new(needle, lower_needle, @haystack[index], lower_hay, bonus(index), item)
+        Match.new(needle, lower_needle, @haystack[index].to_s, lower_hay, bonus(index), item)
       end.to_a.sort!
     end
   end
