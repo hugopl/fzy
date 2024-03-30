@@ -28,6 +28,11 @@ module Fzy
     search(needle, PreparedHaystack(T).new(haystack))
   end
 
+  @[AlwaysInline]
+  protected def fzy_key(item) : String
+    item.responds_to?(:fzy_key) ? item.fzy_key : item.to_s
+  end
+
   # Return true if both strings fuzzy matches.
   #
   # Both strings must be in the same case.

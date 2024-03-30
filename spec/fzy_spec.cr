@@ -1,5 +1,27 @@
 require "./spec_helper"
 
+private class CustomObj
+  include Comparable(CustomObj)
+  getter number : Int32
+
+  def initialize(@number)
+  end
+
+  def fzy_key : String
+    case @number
+    when 1 then "one"
+    when 2 then "two"
+    when 3 then "three"
+    else
+      "many"
+    end
+  end
+
+  def <=>(other)
+    @number <=> other.number
+  end
+end
+
 describe Fzy do
   it "has a version number" do
     Fzy::VERSION.should match /\A\d+\.\d+\.\d+\z/
@@ -31,9 +53,10 @@ describe Fzy do
     end
 
     it "search on custom types" do
-      numbers = [1, 2, 3]
-      results = Fzy.search("2", numbers)
-      results.first.item.should eq(2)
+      collection = Array(CustomObj).new
+      collection << CustomObj.new(1) << CustomObj.new(2) << CustomObj.new(3)
+      results = Fzy.search("two", collection)
+      results.first.item.should eq(CustomObj.new(2))
     end
   end
 

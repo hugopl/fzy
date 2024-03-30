@@ -28,7 +28,7 @@ module Fzy
 
     # Creates a new `PreparedHaystack`.
     def initialize(@haystack : Array(T))
-      @lower_haystack = @haystack.map(&.to_s.downcase)
+      @lower_haystack = @haystack.map { |item| Fzy.fzy_key(item).downcase }
       @bonus = Array(Array(Float32)?).new(@haystack.size, nil)
     end
 
@@ -37,7 +37,7 @@ module Fzy
       bonus = @bonus[index]?
       return bonus unless bonus.nil?
 
-      @bonus[index] = precompute_bonus(@haystack[index].to_s)
+      @bonus[index] = precompute_bonus(Fzy.fzy_key(@haystack[index]))
     end
 
     private def precompute_bonus(haystack : String) : Array(Float32)
@@ -73,7 +73,7 @@ module Fzy
         lower_hay = @lower_haystack[index]
         next unless Fzy.match?(lower_needle, lower_hay)
 
-        Match.new(needle, lower_needle, @haystack[index].to_s, lower_hay, bonus(index), item)
+        Match.new(needle, lower_needle, Fzy.fzy_key(@haystack[index]), lower_hay, bonus(index), item)
       end.to_a.sort!
     end
   end
