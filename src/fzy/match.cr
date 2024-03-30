@@ -31,15 +31,13 @@ module Fzy
     getter item : T
     # Match score.
     getter score : Float32
-    # Index of this match on haystack.
-    getter index : Int32
 
     # :nodoc:
-    def initialize(@value, @score, @positions, @index, @item)
+    def initialize(@value, @score, @positions, @item)
     end
 
     # :nodoc:
-    def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String, bonus : Array(Float32), @index, @item)
+    def initialize(needle : String, lower_needle : String, haystack : String, lower_haystack : String, bonus : Array(Float32), @item)
       n = needle.size
       m = haystack.size
 
@@ -65,11 +63,6 @@ module Fzy
       end
 
       @value = haystack
-    end
-
-    @[Deprecated("Use `item` instead")]
-    def value
-      @item.to_s
     end
 
     # A match is greater than other if it has a greater score.

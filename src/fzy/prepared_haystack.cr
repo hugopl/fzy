@@ -73,7 +73,7 @@ module Fzy
         lower_hay = @lower_haystack[index]
         next unless match?(lower_needle, lower_hay)
 
-        Match.new(needle, lower_needle, @haystack[index], lower_hay, bonus(index), index, item)
+        Match.new(needle, lower_needle, @haystack[index], lower_hay, bonus(index), item)
       end.to_a.sort!
     end
 

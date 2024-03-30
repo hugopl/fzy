@@ -7,10 +7,10 @@ describe Fzy do
 
   context "match" do
     it "works" do
-      Fzy.search("amor", %w(app/models/order)).first.value.should eq("app/models/order")
-      Fzy.search("amor", %w(amor)).first.value.should eq("amor")
-      Fzy.search("amor", %w(amora)).first.value.should eq("amora")
-      Fzy.search("amor", %w(amoR)).first.value.should eq("amoR")
+      Fzy.search("amor", %w(app/models/order)).first.item.should eq("app/models/order")
+      Fzy.search("amor", %w(amor)).first.item.should eq("amor")
+      Fzy.search("amor", %w(amora)).first.item.should eq("amora")
+      Fzy.search("amor", %w(amoR)).first.item.should eq("amoR")
       Fzy.search("amor", %w(amos)).size.should eq(0)
     end
   end
@@ -27,7 +27,7 @@ describe Fzy do
         lib/fuzzy_match/.editorconfig
       )
       results = Fzy.search("main", files)
-      results.first.value.should eq("src/main.cr")
+      results.first.item.should eq("src/main.cr")
     end
   end
 
@@ -44,10 +44,8 @@ describe Fzy do
       )
       results = Fzy.search("LICENSE", files)
       results.size.should eq(2)
-      results[0].value.should eq("lib/fuzzy_match/LICENSE")
-      results[0].index.should eq(1)
-      results[1].value.should eq("lib/version_from_shard/LICENSE")
-      results[1].index.should eq(3)
+      results[0].item.should eq("lib/fuzzy_match/LICENSE")
+      results[1].item.should eq("lib/version_from_shard/LICENSE")
     end
   end
 
