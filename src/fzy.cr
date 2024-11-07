@@ -1,4 +1,5 @@
 require "./fzy/match"
+require "./fzy/bonus"
 require "./fzy/prepared_haystack"
 
 module Fzy
@@ -8,42 +9,39 @@ module Fzy
 
   # Search a needle in a haystack and returns an array of matches.
   #
+  # Note: If you plan to redo the search several times, consider using `search(String, Enumerable(Hay(T))`
+  #
   # ```
-  # results = Fzy.search("hey", %w(Hey Halley Whatever))
+  # results = Fzy.search("hey", %w(Hey Halley Whatever), store_positions: true)
   # results.each do |result|
   #   puts "value: #{result.value}"
   #   puts "score: #{result.score}"
   #   puts "  pos: #{result.positions.inspect}"
   # end
   # ```
-  def search(needle : String, haystack : PreparedHaystack(T)) : Array(Match(T)) forall T
-    haystack.search(needle)
+  def search(needle : String, haystack : Enumerable(String),
+             *, store_positions : Bool = false) : Array(Match(String))
+    downcase_needle = needle.downcase
+    haystack.compact_map do |str|
+      hay = Hay.new(str, str, filepath_bonus(str))
+      hay.match?(downcase_needle, store_positions)
+    end.sort!
   end
 
-  # Search a needle in a haystack and returns an array of matches.
-  #
-  # Consider using `search(String,PreparedHaystack)` if you want to repeat this call with
-  # different needles but the same haystack.
-  def search(needle : String, haystack : Array(T)) : Array(Match(T)) forall T
-    search(needle, PreparedHaystack(T).new(haystack))
+  def search(needle : String, haystack : Enumerable(Hay(T)),
+             *, store_positions : Bool = false) : Array(Match(T)) forall T
+    downcase_needle = needle.downcase
+    haystack.compact_map(&.match?(downcase_needle, store_positions)).sort!
   end
 
-  @[AlwaysInline]
-  protected def fzy_key(item) : String
-    item.responds_to?(:fzy_key) ? item.fzy_key : item.to_s
+  def search(needle : String, haystack : Array(Match(T)),
+             *, store_positions : Bool = false) : Array(Match(T)) forall T
+    downcase_needle = needle.downcase
+    haystack.compact_map(&.hay.match?(downcase_needle, store_positions)).sort!
   end
 
-  # Return true if both strings fuzzy matches.
-  #
-  # Both strings must be in the same case.
-  def match?(needle : String, haystack : String) : Bool
-    offset = 0
-    needle.each_char do |nch|
-      new_offset = haystack.index(nch, offset)
-      return false if new_offset.nil?
-
-      offset = new_offset + 1
-    end
-    true
+  def search(needle : String, haystack : Fzy::PreparedHaystack(T),
+             *, store_positions : Bool = false) : Array(Match(T)) forall T
+    search(needle, haystack.haystack, store_positions: store_positions)
   end
 end

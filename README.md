@@ -18,15 +18,16 @@ dependencies:
 
 ## Usage
 
+Basic usage:
+
 ```crystal
 require "fzy"
 
-matches = Fzy.search("hey", %w(Hey Whatever Halley))
+matches = Fzy.search("hey", %w(Hey Whatever Halley), store_positions: true)
 matches.each do |match|
-  puts "value: #{match.value}"
+  puts "value: #{match.item}"
   puts "score: #{match.score}"
   puts "  pos: #{match.positions.inspect}"
-  puts "index: #{match.index}"
 end
 ```
 
@@ -36,15 +37,13 @@ Should print
 value: Hey
 score: Infinity
   pos: [0, 1, 2]
-index: 0
 value: Halley
 score: 1.87
   pos: [0, 4, 5]
-index: 2
 ```
 
 If you need to do many searches on the same set of data you can speed up things by
-using a prepared haystack.
+creating an `Fzy::PreparedHaystack` or an array of `Fzy::Hay`.
 
 ```crystal
 require "fzy"
@@ -53,7 +52,7 @@ haystack = %w(Hey Halley Whatever)
 prepared_haystack = Fzy::PreparedHaystack.new(haystack)
 matches = Fzy.search("hey", prepared_haystack)
 matches.each do |match|
-  puts "value: #{match.value}"
+  puts "value: #{match.item}"
   puts "score: #{match.score}"
   puts "  pos: #{match.positions.inspect}"
 end
@@ -61,7 +60,6 @@ end
 # Reusing the prepared haystack makes the search faster.
 matches = Fzy.search("ho let's go!", prepared_haystack)
 ```
-
 
 ## Contributing
 
