@@ -53,7 +53,10 @@ module Fzy
 
     # A match is greater than other if it has a greater score.
     def <=>(other : Match)
-      other.score <=> @score
+      cmp = other.score <=> @score
+      return other.item <=> @hay.item if cmp == 0 && T < Comparable
+
+      cmp
     end
 
     delegate item, to: @hay
