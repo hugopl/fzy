@@ -1,6 +1,6 @@
 # fzy.cr
 
-![Build Status](https://github.com/hugopl/fzy/actions/workflows/ci.yml/badge.svg?branch=master)
+![Build Status](https://github.com/hugopl/fzy/actions/workflows/ci.yml/badge.svg?branch=main)
 
 A Crystal port of awesome [Fzy](https://github.com/jhawthorn/fzy) fuzzy finder algorithm.
 
