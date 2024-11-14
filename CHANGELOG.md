@@ -1,3 +1,18 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.6.0] - 2024-11-14
+### Changed
+- Support to fuzzy search custom objects by wrapping then in the `Fzy::Hay(T)` class.
+- `Fzy::Match` is now `Fzy::Match(T)`, it has a reference to `Fzy::Hay(T)`
+- Removed `Fzy::Match#index`.
+- Match positions are opitional and disabled by default.
+- Is now possible to use a custom bonus function, pass it on `Fzy::Hay` constructor.
+- `Fzy::PreparedHaystack` is now `Fzy::PreparedHaystack(T)`, just a wrapper to `Array(Fzy::Hay(T))`.
+
 ## [0.5.5] - 2023-02-24
 ### Fixed
 - Use shards executable to generate the Fzy::VERSION constant contents.
